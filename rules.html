@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ring-Link 5｜遊び方・ルール</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:#080814;
+  font-family:'Segoe UI',Meiryo,Arial,sans-serif;
+  color:#ccc;
+  line-height:1.8;
+  padding:32px 16px 60px;
+}
+.wrap{max-width:680px;margin:0 auto;}
+h1{
+  font-size:22px;letter-spacing:6px;text-transform:uppercase;
+  color:#333;text-align:center;margin-bottom:32px;
+}
+h2{
+  font-size:15px;letter-spacing:3px;text-transform:uppercase;
+  color:#555;border-bottom:1px solid #1a1a2e;
+  padding-bottom:8px;margin:36px 0 16px;
+}
+p{font-size:14px;color:#aaa;margin-bottom:12px;}
+ul{font-size:14px;color:#aaa;padding-left:20px;margin-bottom:12px;}
+ul li{margin-bottom:6px;}
+.tip{
+  background:rgba(255,200,0,0.05);border-left:3px solid #554400;
+  border-radius:4px;padding:12px 16px;margin:12px 0;
+  font-size:13px;color:#998855;
+}
+table{
+  width:100%;border-collapse:collapse;
+  font-size:13px;margin:12px 0;
+}
+th{
+  background:#0d0d1a;color:#555;
+  padding:8px 12px;text-align:left;font-weight:normal;
+  letter-spacing:1px;border-bottom:1px solid #1a1a2e;
+}
+td{
+  padding:10px 12px;border-bottom:1px solid #111122;color:#aaa;
+}
+td:first-child{color:#ddd;white-space:nowrap;}
+.tag{
+  display:inline-block;font-size:11px;padding:2px 8px;
+  border-radius:3px;margin-left:6px;vertical-align:middle;
+}
+.tag-warn{background:rgba(255,200,0,0.15);color:#cc9900;}
+.tag-ok{background:rgba(100,200,100,0.12);color:#449944;}
+.tag-ng{background:rgba(255,80,80,0.12);color:#993333;}
+.btn-play{
+  display:block;text-align:center;margin:48px auto 0;
+  padding:14px 48px;background:#111;color:#888;
+  border:2px solid #2a2a3a;border-radius:8px;
+  text-decoration:none;font-size:14px;letter-spacing:3px;
+  text-transform:uppercase;transition:all .2s;width:fit-content;
+}
+.btn-play:hover{background:#10101a;border-color:#333399;color:#8888ff;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Ring-Link 5</h1>
+
+  <!-- 目的 -->
+  <h2>🎯 目的</h2>
+  <p>同じ色の円を<strong style="color:#ddd">直線状に5個</strong>並べたら勝ち。</p>
+
+  <!-- 基本操作 -->
+  <h2>🕹️ 基本操作</h2>
+  <p><strong style="color:#ddd">1手目：</strong>盤面の好きな場所をクリック（タップ）して最初の円を置く。</p>
+  <p><strong style="color:#ddd">2手目以降：</strong>すでに置かれている円に<strong style="color:#ddd">ぴったり接する位置</strong>にしか置けない。カーソル（指）を近づけると半透明のプレビューが表示されるので、位置を確認してからクリック（タップ）で確定。</p>
+  <div class="tip">📱 スマホの場合：指を置いたまま動かして位置を調整し、指を離して確定。プレビューは指より少し上に表示される。</div>
+
+  <!-- 直線のルール -->
+  <h2>📐 直線のルール</h2>
+  <p>3個以上の直線チェーンとして認められるには、<strong style="color:#ddd">隣り合う2つの円の向きが30°以内</strong>でなければならない。</p>
+  <p>各円から<strong style="color:#ff9944">オレンジ色の弧</strong>が表示される。この弧の中に次の円を置くと直線が続く。3個以上の直線チェーンは自動的にラインで可視化される。</p>
+
+  <!-- 気システム -->
+  <h2>💨 気（き）システム</h2>
+  <p>各円の中央に表示されている<strong style="color:#ddd">数字が「気」</strong>を表している。気は囲碁の概念を取り入れたもので、円の「体力」にあたる。</p>
+  <table>
+    <tr><th>用語</th><th>意味</th></tr>
+    <tr>
+      <td>気</td>
+      <td>1 ＋ 接している同色の円の数。仲間が多いほど強くなる。</td>
+    </tr>
+    <tr>
+      <td>圧力</td>
+      <td>自分の円に接している相手の円の数。</td>
+    </tr>
+  </table>
+  <p><strong style="color:#ddd">圧力 ＞ 気</strong> になると、その円は捕獲されて盤面から消える。</p>
+  <div class="tip">⚠️ <strong style="color:#cc9900">黄色く光っている円</strong>はアタリのサイン。捕獲される直前の状態。</div>
+
+  <!-- 禁手 -->
+  <h2>🚫 禁手（自殺手）</h2>
+  <p>置いた瞬間に自分の円が捕獲されてしまう場所には<strong style="color:#ddd">置けない</strong>。ただし、同時に相手の円も捕獲できる場合は例外として置ける。</p>
+
+  <!-- モード -->
+  <h2>🤖 対戦モード</h2>
+  <table>
+    <tr><th>モード</th><th>内容</th></tr>
+    <tr><td>Player vs Player</td><td>同じ端末で2人が交互にプレイ。</td></tr>
+    <tr><td>Player vs CPU</td><td>コンピュータと対戦。CPUは勝ち筋の構築・ブロック・捕獲を判断して手を打つ。</td></tr>
+  </table>
+
+  <!-- 戦略 -->
+  <h2>💡 戦略のヒント</h2>
+  <ul>
+    <li>円をかたまりで置くだけでは勝てない。<strong style="color:#ddd">直線を意識して伸ばす</strong>こと。</li>
+    <li>自分の円同士を隣接させて<strong style="color:#ddd">気を増やす</strong>と、相手に捕獲されにくくなる。</li>
+    <li>相手の円の気が少ない（黄色く光っている）ところを狙って<strong style="color:#ddd">囲むと捕獲のチャンス</strong>。</li>
+    <li>相手の直線が<strong style="color:#ddd">3個になったら最優先でブロック！</strong></li>
+  </ul>
+
+  <a class="btn-play" href="index.html" target="_blank">▶ ゲームをプレイ</a>
+
+</div>
+</body>
+</html>

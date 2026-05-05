@@ -692,41 +692,53 @@ function draw() {
   }
 
   // 直線チェーンライン（円の上に描いて視認性を確保）
+  // 重なっても輝度が増さないよう、長さごとにオフスクリーンへ全描画してから合成
   for (const pl of [1, 2]) {
-    const chains = getLineChains(pl);
-    for (const chain of chains) {
-      if (chain.length < 3) continue;
-      ctx.save();
+    const chains = getLineChains(pl).filter(c => c.length >= 3);
+    if (!chains.length) continue;
 
-      let strokeStyle, lineWidth, shadowBlur, shadowColor;
-      if (chain.length >= 5) {
-        // 5個：勝利色（金／水色）＋グロー
-        strokeStyle  = pl === 1 ? 'rgba(255,210,0,0.95)'  : 'rgba(0,230,255,0.95)';
-        lineWidth    = 3;
-        shadowBlur   = 12;
-        shadowColor  = pl === 1 ? '#ffcc00' : '#00eeff';
-      } else if (chain.length === 4) {
-        // 4個：警告色（オレンジ／シアン）
-        strokeStyle  = pl === 1 ? 'rgba(255,130,0,0.85)'  : 'rgba(0,200,255,0.85)';
-        lineWidth    = 2.5;
-        shadowBlur   = 6;
-        shadowColor  = pl === 1 ? '#ff8800' : '#00ccff';
-      } else {
-        // 3個：控えめな色
-        strokeStyle  = pl === 1 ? 'rgba(255,180,100,0.45)' : 'rgba(100,180,255,0.45)';
-        lineWidth    = 1.5;
-        shadowBlur   = 0;
-        shadowColor  = 'transparent';
+    const groups = [
+      { test: n => n >= 5,
+        color: pl===1 ? [255,210,0]   : [0,230,255],   alpha: 0.95,
+        lineWidth: 3,   shadowBlur: 12,
+        shadowColor: pl===1 ? '#ffcc00' : '#00eeff' },
+      { test: n => n === 4,
+        color: pl===1 ? [255,130,0]   : [0,200,255],   alpha: 0.85,
+        lineWidth: 2.5, shadowBlur: 6,
+        shadowColor: pl===1 ? '#ff8800' : '#00ccff' },
+      { test: n => n === 3,
+        color: pl===1 ? [255,180,100] : [100,180,255], alpha: 0.45,
+        lineWidth: 1.5, shadowBlur: 0,
+        shadowColor: 'transparent' },
+    ];
+
+    for (const g of groups) {
+      const sub = chains.filter(c => g.test(c.length));
+      if (!sub.length) continue;
+
+      // オフスクリーンキャンバスに不透明で描く（重なっても輝度不変）
+      const off = document.createElement('canvas');
+      off.width = W; off.height = H;
+      const oc = off.getContext('2d');
+      oc.strokeStyle = `rgb(${g.color[0]},${g.color[1]},${g.color[2]})`;
+      oc.lineWidth   = g.lineWidth;
+      oc.lineCap     = 'round';
+      oc.lineJoin    = 'round';
+      if (g.shadowBlur > 0) {
+        oc.shadowBlur  = g.shadowBlur;
+        oc.shadowColor = g.shadowColor;
       }
+      oc.beginPath();
+      for (const chain of sub) {
+        oc.moveTo(chain[0].x, chain[0].y);
+        for (let i = 1; i < chain.length; i++) oc.lineTo(chain[i].x, chain[i].y);
+      }
+      oc.stroke();
 
-      ctx.strokeStyle = strokeStyle;
-      ctx.lineWidth   = lineWidth;
-      ctx.shadowBlur  = shadowBlur;
-      ctx.shadowColor = shadowColor;
-      ctx.beginPath();
-      ctx.moveTo(chain[0].x, chain[0].y);
-      for (let i = 1; i < chain.length; i++) ctx.lineTo(chain[i].x, chain[i].y);
-      ctx.stroke();
+      // 主キャンバスへ一度だけ合成（alpha を一回だけ適用）
+      ctx.save();
+      ctx.globalAlpha = g.alpha;
+      ctx.drawImage(off, 0, 0);
       ctx.restore();
     }
   }

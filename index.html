@@ -734,10 +734,8 @@ function draw() {
       ctx.beginPath(); ctx.arc(snapPos.x, snapPos.y, 3.5, 0, Math.PI*2); ctx.fill();
       ctx.restore();
 
-      // 接点の光るドット（プレビュー円が接している既存の円との接触点）
-      const touching_circles = live().filter(c =>
-        Math.abs(Math.hypot(snapPos.x - c.x, snapPos.y - c.y) - SNAP_DIST) < 8
-      );
+      // 接点の光るドット（ゲームと同じ touching() で判定）
+      const touching_circles = live().filter(c => touching(snapPos, c));
       for (const tc of touching_circles) {
         const cx = (snapPos.x + tc.x) / 2;
         const cy = (snapPos.y + tc.y) / 2;

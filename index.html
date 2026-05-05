@@ -50,9 +50,13 @@ canvas{display:block;width:100%;height:auto;border:1px solid #161628;border-radi
 #over-corner.show{display:block}
 #over-corner-title{font-size:clamp(11px,3vw,14px);font-weight:bold;letter-spacing:2px}
 
-/* RESTARTボタン（盤面の下） */
-#restart-area{display:none;text-align:center;margin-top:12px}
-#restart-area.show{display:block}
+/* RESTARTボタン・UNDOボタン（盤面の下） */
+#restart-area{display:none;margin-top:12px}
+#restart-area.show{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap}
+#btn-undo{padding:10px 24px;font-size:clamp(12px,3.5vw,14px);letter-spacing:2px;text-transform:uppercase;
+  background:#111;color:#886622;border:2px solid #443311;border-radius:8px;
+  cursor:pointer;transition:all .2s}
+#btn-undo:hover,#btn-undo:active{background:#1a1208;border-color:#886622;color:#ffaa44}
 #btn-restart{padding:10px 38px;font-size:clamp(12px,3.5vw,15px);letter-spacing:3px;text-transform:uppercase;
   background:#111;color:#aaa;border:2px solid #2a2a3a;border-radius:8px;
   cursor:pointer;transition:all .2s}
@@ -105,6 +109,7 @@ canvas{display:block;width:100%;height:auto;border:1px solid #161628;border-radi
 </div>
 <!-- RESTARTボタンは盤面の下 -->
 <div id="restart-area">
+  <button id="btn-undo">↩ 1手戻す</button>
   <button id="btn-restart">RESTART</button>
 </div>
 <div id="msg">クリックして最初の円を置いてください</div>
@@ -148,6 +153,17 @@ let touchActive = false;
 let sealedSpots = []; // 封鎖中の座標 [{x, y, until}]  until はターン数
 let totalTurns  = 0;  // 累計配置数（封鎖の期限管理に使用）
 const SEAL_TURNS = 4; // 捕獲後に封鎖するターン数（両者2手ずつ）
+let history = [];     // 手を戻すための状態履歴
+
+function saveState() {
+  history.push({
+    circles:     circles.map(c => ({...c})),
+    turn,
+    sealedSpots: sealedSpots.map(s => ({...s})),
+    totalTurns
+  });
+  if (history.length > 30) history.shift(); // メモリ節約
+}
 const CPU_PL    = 2;
 const CPU_DELAY = 1500; // ms（タッチ操作時に何が起きたかわかるよう余裕を持たせる）
 const TOUCH_LIFT = 100; // タッチ時にスナップ位置を指より上にずらすオフセット（canvas単位）
@@ -460,6 +476,7 @@ function cpuTurn() {
   }
   if (!best) { turn = 1; updateHUD(); return; }
 
+  saveState();
   const newCircle = {x: best.x, y: best.y, r: R, p: CPU_PL, justPlaced: performance.now()};
   circles.push(newCircle);
 
@@ -785,6 +802,7 @@ function handlePlace(mx, my, precomputed) {
     return;
   }
 
+  saveState();
   const newCircle = {x: pos.x, y: pos.y, r: R, p: turn};
   circles.push(newCircle);
 
@@ -874,7 +892,7 @@ function showWin(title, color, msg) {
 function startGame(selectedMode) {
   mode = selectedMode;
   circles=[]; turn=1; state='play'; winGroup=[]; snapPos=null;
-  sealedSpots=[]; totalTurns=0;
+  sealedSpots=[]; totalTurns=0; history=[];
   document.getElementById('start').style.display = 'none';
   overEl.classList.remove('show');
   overCorner.classList.remove('show');
@@ -892,8 +910,26 @@ document.getElementById('btn-restart').addEventListener('click', () => {
   restartArea.classList.remove('show');
   document.getElementById('start').style.display = 'flex';
   circles=[]; turn=1; state='play'; winGroup=[]; snapPos=null;
-  sealedSpots=[]; totalTurns=0;
+  sealedSpots=[]; totalTurns=0; history=[];
   msgEl.textContent = '';
+  updateHUD();
+});
+
+document.getElementById('btn-undo').addEventListener('click', () => {
+  if (history.length === 0) return;
+  const prev = history.pop();
+  circles     = prev.circles;
+  turn        = prev.turn;
+  sealedSpots = prev.sealedSpots;
+  totalTurns  = prev.totalTurns;
+  winGroup = [];
+  state    = 'play';
+  // CPU対戦でCPUのターンに戻った場合はプレイヤー側に切り替え
+  if (mode === 'cpu' && turn === CPU_PL) turn = 1;
+  overEl.classList.remove('show');
+  overCorner.classList.remove('show');
+  restartArea.classList.remove('show');
+  msgEl.textContent = `↩ 1手戻しました — Player ${turn} のターン`;
   updateHUD();
 });
 

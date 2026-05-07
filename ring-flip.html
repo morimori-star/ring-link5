@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+<title>Ring-Flip</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:#080814;display:flex;flex-direction:column;align-items:center;
+  min-height:100vh;font-family:'Segoe UI',Meiryo,Arial,sans-serif;
+  color:#ddd;user-select:none;
+  padding:8px;
+  padding-bottom:max(8px,env(safe-area-inset-bottom));
+}
+h1{
+  font-size:clamp(22px,5.5vw,36px);letter-spacing:clamp(4px,2vw,10px);
+  margin-bottom:10px;text-transform:uppercase;
+}
+h1 .logo-main{color:#777;text-shadow:0 0 18px rgba(160,160,200,0.25)}
+h1 .logo-flip{color:#cc8844;text-shadow:0 0 20px rgba(200,130,60,0.5)}
+
+/* HUD */
+#hud{display:flex;align-items:stretch;gap:clamp(6px,2vw,14px);
+     width:100%;max-width:800px;margin-bottom:8px}
+.pcard{flex:1;border-radius:10px;
+       padding:clamp(6px,2vw,10px) clamp(8px,2.5vw,16px);
+       text-align:center;transition:opacity .3s,box-shadow .3s}
+.p1{background:rgba(200,50,50,.12);border:2px solid #993333}
+.p2{background:rgba(50,50,200,.12);border:2px solid #333399}
+.pcard.on.p1{border-color:#ff4444;box-shadow:0 0 22px #ff2222}
+.pcard.on.p2{border-color:#4444ff;box-shadow:0 0 22px #2222ff}
+.pcard.off{opacity:.28}
+.pname{font-size:clamp(9px,2vw,11px);letter-spacing:2px;color:#666;
+       margin-bottom:4px;text-transform:uppercase}
+.pcnt{font-size:clamp(18px,5vw,28px);font-weight:bold}
+.p1 .pcnt{color:#ff5555}.p2 .pcnt{color:#5555ff}
+.psub{font-size:clamp(9px,2vw,10px);color:#444;margin-top:2px}
+#mid{min-width:clamp(55px,13vw,100px);text-align:center;
+     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+#mid-label{font-size:clamp(8px,1.8vw,10px);letter-spacing:2px;color:#444;text-transform:uppercase}
+#mid-val{font-size:clamp(15px,4.5vw,24px);font-weight:bold}
+
+/* Canvas */
+#wrap{position:relative;width:100%;max-width:800px}
+canvas{display:block;width:100%;height:auto;
+       border:1px solid #161628;border-radius:6px;
+       cursor:crosshair;touch-action:none}
+
+/* Game over overlay */
+#over{display:none;position:absolute;inset:0;border-radius:6px;
+      flex-direction:column;align-items:center;justify-content:center;
+      pointer-events:none;background:rgba(4,4,20,0.78)}
+#over.show{display:flex}
+#over-title{font-size:clamp(28px,8vw,52px);font-weight:bold;letter-spacing:4px;
+  text-shadow:0 0 30px currentColor,0 0 60px currentColor;
+  animation:overpop .35s cubic-bezier(.2,1.4,.4,1) both}
+#over-score{font-size:clamp(13px,3.5vw,20px);color:#888;margin-top:8px}
+@keyframes overpop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+
+#msg{margin-top:7px;font-size:clamp(11px,3vw,13px);text-align:center;
+     color:#666;letter-spacing:1px;min-height:16px;width:100%;max-width:800px}
+#restart-area{display:none;margin-top:10px;text-align:center}
+#restart-area.show{display:block}
+#restart-btn{padding:11px 38px;background:#111;color:#888;
+  border:2px solid #2a2a3a;border-radius:8px;font-size:13px;
+  letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all .2s}
+#restart-btn:hover{background:#10101a;border-color:#cc8844;color:#cc8844}
+</style>
+</head>
+<body>
+
+<h1><span class="logo-main">Ring-</span><span class="logo-flip">Flip</span></h1>
+
+<div id="hud">
+  <div class="pcard p1" id="card1">
+    <div class="pname">Player 1</div>
+    <div class="pcnt" id="cnt1">2</div>
+    <div class="psub">circles</div>
+  </div>
+  <div id="mid">
+    <div id="mid-label">Turn</div>
+    <div id="mid-val">P1</div>
+  </div>
+  <div class="pcard p2" id="card2">
+    <div class="pname">Player 2</div>
+    <div class="pcnt" id="cnt2">2</div>
+    <div class="psub">circles</div>
+  </div>
+</div>
+
+<div id="wrap">
+  <canvas id="c" width="800" height="640"></canvas>
+  <div id="over">
+    <div id="over-title"></div>
+    <div id="over-score"></div>
+  </div>
+</div>
+
+<div id="msg"></div>
+<div id="restart-area">
+  <button id="restart-btn">▶ New Game</button>
+</div>
+
+<script>
+/* ── 定数 ───────────────────────────────── */
+const W = 800, H = 640;
+const R = 34;
+const SNAP_DIST  = 2 * R;       // 68
+const SNAP_RANGE = R * 4.2;
+const ANGLE_TOL  = Math.PI / 6; // 30°
+const TOUCH_LIFT = 100;
+
+/* ── 要素 ───────────────────────────────── */
+const canvas    = document.getElementById('c');
+const ctx       = canvas.getContext('2d');
+const msgEl     = document.getElementById('msg');
+const overEl    = document.getElementById('over');
+const overTitle = document.getElementById('over-title');
+const overScore = document.getElementById('over-score');
+const restartArea = document.getElementById('restart-area');
+const card1  = document.getElementById('card1');
+const card2  = document.getElementById('card2');
+const cnt1El = document.getElementById('cnt1');
+const cnt2El = document.getElementById('cnt2');
+const midVal = document.querySelector('#mid-val');
+
+/* ── 状態 ───────────────────────────────── */
+let circles    = [];
+let turn       = 1;          // 1 or 2
+let state      = 'play';
+let mouse      = null;
+let snapPos    = null;
+let touchActive = false;
+let totalTurns = 0;
+let validMoves  = [];        // 現ターンの置ける場所リスト
+let flipPreview = [];        // スナップ位置でひっくり返る円
+let lastPlaced  = null;      // 最後に置いた円 {x,y,timer}
+
+/* ══════════════════════════════════════════
+   幾何ヘルパー
+══════════════════════════════════════════ */
+function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+
+function touching(a, b) { return Math.abs(dist(a, b) - SNAP_DIST) < 4; }
+
+function angleDiff(a, b) {
+  let d = Math.abs(a - b) % (Math.PI * 2);
+  return d > Math.PI ? Math.PI * 2 - d : d;
+}
+
+/* ══════════════════════════════════════════
+   フリップ判定
+══════════════════════════════════════════ */
+
+/**
+ * newPos から startNeighbor 方向へ連鎖をたどり、
+ * 「相手の円…自分の円」のサンドイッチが完成すれば
+ * ひっくり返る相手の円の配列を返す。
+ */
+function followChain(newPos, startNeighbor, pl) {
+  if (startNeighbor.p === pl) return [];     // 相手の円でなければ開始しない
+  const inChain = [startNeighbor];
+  let cur    = startNeighbor;
+  let curDir = Math.atan2(cur.y - newPos.y, cur.x - newPos.x);
+
+  for (let step = 0; step < 60; step++) {
+    let best = null, bestDiff = Infinity;
+    for (const c of circles) {
+      if (inChain.includes(c)) continue;
+      if (!touching(cur, c)) continue;
+      const d    = Math.atan2(c.y - cur.y, c.x - cur.x);
+      const diff = angleDiff(d, curDir);
+      if (diff < ANGLE_TOL && diff < bestDiff) { bestDiff = diff; best = c; }
+    }
+    if (!best) return [];              // 連鎖が途切れた
+    if (best.p === pl) return inChain; // サンドイッチ成立！
+    // 引き続き相手の円
+    inChain.push(best);
+    curDir = Math.atan2(best.y - cur.y, best.x - cur.x);
+    cur    = best;
+  }
+  return [];
+}
+
+/** pos に置いたとき pl がひっくり返せる円の配列 */
+function findFlips(pos, pl) {
+  const flips = [];
+  for (const nb of circles.filter(c => touching(pos, c))) {
+    if (nb.p === pl) continue;
+    for (const c of followChain(pos, nb, pl)) {
+      if (!flips.includes(c)) flips.push(c);
+    }
+  }
+  return flips;
+}
+
+/* ══════════════════════════════════════════
+   合法手チェック
+══════════════════════════════════════════ */
+function overlaps(pos) {
+  return circles.some(c => dist(pos, c) < SNAP_DIST - 4);
+}
+
+function isValid(pos, pl) {
+  if (overlaps(pos)) return false;
+  if (!circles.some(c => touching(pos, c))) return false;
+  return findFlips(pos, pl).length > 0;
+}
+
+/** 全候補スナップ位置（既存円周囲 48 方向）を列挙 */
+function allCandidates() {
+  const res = [], seen = new Set();
+  for (const c of circles) {
+    for (let i = 0; i < 48; i++) {
+      const a = i * Math.PI * 2 / 48;
+      const x = c.x + SNAP_DIST * Math.cos(a);
+      const y = c.y + SNAP_DIST * Math.sin(a);
+      if (x < R || x > W - R || y < R || y > H - R) continue;
+      if (overlaps({x, y})) continue;
+      const key = `${Math.round(x)},${Math.round(y)}`;
+      if (!seen.has(key)) { seen.add(key); res.push({x, y}); }
+    }
+  }
+  return res;
+}
+
+function updateValidMoves() {
+  validMoves = allCandidates().filter(p => isValid(p, turn));
+}
+
+/* ══════════════════════════════════════════
+   スナップ計算
+══════════════════════════════════════════ */
+function computeSnap(mx, my) {
+  let best = null, bestDist = Infinity;
+  for (const c of circles) {
+    const d = dist({x: mx, y: my}, c);
+    if (d < SNAP_RANGE && d < bestDist) { bestDist = d; best = c; }
+  }
+  if (!best) return null;
+  const a = Math.atan2(my - best.y, mx - best.x);
+  const x = best.x + SNAP_DIST * Math.cos(a);
+  const y = best.y + SNAP_DIST * Math.sin(a);
+  if (x < R || x > W - R || y < R || y > H - R) return null;
+  return {x, y};
+}
+
+function toCanvas(ev) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: (ev.clientX - rect.left) * W / rect.width,
+    y: (ev.clientY - rect.top)  * H / rect.height,
+  };
+}
+
+function updateSnap(mx, my, lift = 0) {
+  snapPos     = computeSnap(mx, my - lift);
+  flipPreview = snapPos ? findFlips(snapPos, turn) : [];
+}
+
+/* ══════════════════════════════════════════
+   入力ハンドラ
+══════════════════════════════════════════ */
+canvas.addEventListener('mousemove', e => {
+  if (touchActive || state !== 'play') return;
+  const p = toCanvas(e); mouse = p;
+  updateSnap(p.x, p.y);
+});
+canvas.addEventListener('mouseleave', () => {
+  mouse = null; snapPos = null; flipPreview = [];
+});
+canvas.addEventListener('click', e => {
+  if (touchActive || state !== 'play') return;
+  const p    = toCanvas(e);
+  const snap = computeSnap(p.x, p.y);
+  if (snap && isValid(snap, turn)) placeCircle(snap);
+});
+
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault(); touchActive = true;
+  if (state !== 'play') return;
+  const p = toCanvas(e.touches[0]); mouse = p;
+  updateSnap(p.x, p.y, TOUCH_LIFT);
+}, {passive: false});
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if (state !== 'play') return;
+  const p = toCanvas(e.touches[0]); mouse = p;
+  updateSnap(p.x, p.y, TOUCH_LIFT);
+}, {passive: false});
+canvas.addEventListener('touchend', e => {
+  e.preventDefault();
+  if (state === 'play' && snapPos && isValid(snapPos, turn)) placeCircle(snapPos);
+  touchActive = false; mouse = null; snapPos = null; flipPreview = [];
+}, {passive: false});
+
+/* ══════════════════════════════════════════
+   ゲームロジック
+══════════════════════════════════════════ */
+function placeCircle(pos) {
+  const flips = findFlips(pos, turn);
+
+  circles.push({x: pos.x, y: pos.y, p: turn});
+  lastPlaced = {x: pos.x, y: pos.y, timer: 0};
+
+  for (const c of flips) { c.p = turn; c.flipTimer = 10; }
+
+  totalTurns++;
+  turn = 3 - turn;
+  updateValidMoves();
+
+  if (validMoves.length === 0) {
+    // 次のプレイヤーが置けない → パス
+    const passedPlayer = turn;
+    turn = 3 - turn;
+    updateValidMoves();
+    if (validMoves.length === 0) {
+      endGame(); return;
+    }
+    msgEl.textContent = `Player ${passedPlayer} は置ける場所がないのでパス`;
+  }
+
+  snapPos = null; flipPreview = [];
+  updateHUD();
+}
+
+function endGame() {
+  state = 'over';
+  const p1 = circles.filter(c => c.p === 1).length;
+  const p2 = circles.filter(c => c.p === 2).length;
+  let title, color;
+  if      (p1 > p2) { title = 'Player 1 Win!'; color = '#ff5555'; }
+  else if (p2 > p1) { title = 'Player 2 Win!'; color = '#5555ff'; }
+  else              { title = 'Draw!';          color = '#aaaaaa'; }
+  overTitle.textContent = title;
+  overTitle.style.color = color;
+  overScore.textContent = `P1: ${p1}  −  P2: ${p2}`;
+  overEl.classList.add('show');
+  restartArea.classList.add('show');
+  updateHUD();
+}
+
+function initGame() {
+  // 標準オセロと同じ2×2の初期配置（中央、距離=2R）
+  const cx = W / 2, cy = H / 2;
+  circles = [
+    {x: cx - R, y: cy - R, p: 1},  // 左上: P1
+    {x: cx + R, y: cy - R, p: 2},  // 右上: P2
+    {x: cx - R, y: cy + R, p: 2},  // 左下: P2
+    {x: cx + R, y: cy + R, p: 1},  // 右下: P1
+  ];
+  turn = 1; state = 'play';
+  mouse = null; snapPos = null; touchActive = false;
+  totalTurns = 0; lastPlaced = null; flipPreview = [];
+  overEl.classList.remove('show');
+  restartArea.classList.remove('show');
+  updateValidMoves();
+  updateHUD();
+}
+
+function updateHUD() {
+  const p1 = circles.filter(c => c.p === 1).length;
+  const p2 = circles.filter(c => c.p === 2).length;
+  cnt1El.textContent = p1;
+  cnt2El.textContent = p2;
+  if (state === 'play') {
+    midVal.textContent   = turn === 1 ? 'P1' : 'P2';
+    midVal.style.color   = turn === 1 ? '#ff5555' : '#5555ff';
+    card1.className = `pcard p1 ${turn === 1 ? 'on' : 'off'}`;
+    card2.className = `pcard p2 ${turn === 2 ? 'on' : 'off'}`;
+    msgEl.textContent = `Player ${turn} のターン  ·  ${validMoves.length} か所に置けます`;
+  } else {
+    card1.className = 'pcard p1 off';
+    card2.className = 'pcard p2 off';
+    midVal.textContent = '--'; midVal.style.color = '#555';
+  }
+}
+
+/* ══════════════════════════════════════════
+   描画
+══════════════════════════════════════════ */
+let frame = 0;
+
+function draw() {
+  frame++;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#080814';
+  ctx.fillRect(0, 0, W, H);
+
+  /* 接触ライン（全円の接触ペアを薄く結ぶ） */
+  ctx.save();
+  ctx.strokeStyle = 'rgba(80,80,120,0.22)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < circles.length; i++) {
+    for (let j = i + 1; j < circles.length; j++) {
+      if (!touching(circles[i], circles[j])) continue;
+      ctx.beginPath();
+      ctx.moveTo(circles[i].x, circles[i].y);
+      ctx.lineTo(circles[j].x, circles[j].y);
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+
+  /* 合法手ドット（点滅） */
+  if (state === 'play') {
+    const pulse = 0.5 + 0.28 * Math.sin(frame * 0.07);
+    const alpha = pulse * 0.65;
+    const col = turn === 1
+      ? `rgba(255,80,80,${alpha})`
+      : `rgba(80,80,255,${alpha})`;
+    for (const v of validMoves) {
+      ctx.beginPath();
+      ctx.arc(v.x, v.y, R * 0.26, 0, Math.PI * 2);
+      ctx.fillStyle = col;
+      ctx.fill();
+    }
+  }
+
+  /* ひっくり返りプレビュー */
+  if (flipPreview.length > 0 && snapPos) {
+    const glowCol = turn === 1 ? '#ff4444' : '#4444ff';
+    const fillCol = turn === 1 ? 'rgba(255,100,100,0.38)' : 'rgba(100,100,255,0.38)';
+    ctx.save();
+    ctx.shadowBlur = 18; ctx.shadowColor = glowCol;
+    for (const c of flipPreview) {
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, R + 5, 0, Math.PI * 2);
+      ctx.fillStyle = fillCol;
+      ctx.fill();
+    }
+    /* スナップ → ひっくり返る円 → アンカー円 のチェーンラインを描く */
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = turn === 1 ? 'rgba(255,120,120,0.55)' : 'rgba(120,120,255,0.55)';
+    ctx.lineWidth   = 2;
+    ctx.setLineDash([5, 4]);
+    for (const nb of circles.filter(c => touching(snapPos, c) && c.p !== turn)) {
+      const chain = followChain(snapPos, nb, turn);
+      if (!chain.length) continue;
+      ctx.beginPath();
+      ctx.moveTo(snapPos.x, snapPos.y);
+      for (const c of chain) ctx.lineTo(c.x, c.y);
+      // アンカー円
+      const last = chain[chain.length - 1];
+      const anchor = circles.find(c =>
+        touching(last, c) &&
+        c.p === turn &&
+        !chain.includes(c) &&
+        angleDiff(
+          Math.atan2(c.y - last.y, c.x - last.x),
+          Math.atan2(last.y - (chain.length > 1 ? chain[chain.length-2].y : snapPos.y),
+                     last.x - (chain.length > 1 ? chain[chain.length-2].x : snapPos.x))
+        ) < ANGLE_TOL
+      );
+      if (anchor) ctx.lineTo(anchor.x, anchor.y);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+
+  /* 既存の円 */
+  for (const c of circles) {
+    const isFlipping = (c.flipTimer || 0) > 0;
+    const glowCol = c.p === 1 ? '#ff4444' : '#4444ff';
+    const col1    = c.p === 1 ? '#cc2222' : '#2222cc';
+    const col2    = c.p === 1 ? '#7a1414' : '#14147a';
+
+    ctx.save();
+    ctx.shadowBlur  = isFlipping ? 26 : 8;
+    ctx.shadowColor = glowCol;
+
+    const grad = ctx.createRadialGradient(
+      c.x - R * 0.3, c.y - R * 0.35, R * 0.08,
+      c.x,           c.y,             R
+    );
+    grad.addColorStop(0, col1);
+    grad.addColorStop(1, col2);
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, R, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = glowCol;
+    ctx.lineWidth   = isFlipping ? 3.5 : 1.5;
+    ctx.stroke();
+    ctx.restore();
+
+    if (c.flipTimer > 0) c.flipTimer--;
+  }
+
+  /* 最後に置いた円のフラッシュ */
+  if (lastPlaced) {
+    lastPlaced.timer++;
+    const t = lastPlaced.timer;
+    if (t < 45) {
+      const alpha = Math.max(0, 1 - t / 22) * 0.7;
+      ctx.save();
+      ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
+      ctx.lineWidth = 3.5;
+      ctx.shadowBlur = 12; ctx.shadowColor = '#fff';
+      ctx.beginPath();
+      ctx.arc(lastPlaced.x, lastPlaced.y, R + 7, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    } else {
+      lastPlaced = null;
+    }
+  }
+
+  /* スナッププレビュー */
+  if (mouse && state === 'play' && snapPos) {
+    const valid = isValid(snapPos, turn);
+    const fillCol   = valid
+      ? (turn === 1 ? 'rgba(255,80,80,0.28)' : 'rgba(80,80,255,0.28)')
+      : 'rgba(100,100,100,0.12)';
+    const strokeCol = valid
+      ? (turn === 1 ? '#ff6666' : '#6666ff')
+      : '#444';
+
+    ctx.save();
+    if (valid) { ctx.shadowBlur = 8; ctx.shadowColor = strokeCol; }
+    ctx.fillStyle   = fillCol;
+    ctx.strokeStyle = strokeCol;
+    ctx.lineWidth   = 1.5;
+    ctx.setLineDash([4, 3]);
+    ctx.beginPath();
+    ctx.arc(snapPos.x, snapPos.y, R, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+    ctx.setLineDash([]);
+
+    /* 接点ドット */
+    ctx.shadowBlur = 0;
+    for (const tc of circles.filter(c => touching(snapPos, c))) {
+      const mx = (snapPos.x + tc.x) / 2;
+      const my = (snapPos.y + tc.y) / 2;
+      ctx.fillStyle = valid ? 'rgba(255,255,255,0.75)' : 'rgba(120,120,120,0.35)';
+      ctx.beginPath();
+      ctx.arc(mx, my, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  requestAnimationFrame(draw);
+}
+
+/* ── 起動 ───────────────────────────────── */
+document.getElementById('restart-btn').addEventListener('click', initGame);
+initGame();
+draw();
+</script>
+</body>
+</html>

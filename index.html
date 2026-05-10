@@ -472,21 +472,23 @@ function soundPlace() {
     bp.Q.value = 1.2;
     const nGain = ac.createGain();
     noise.connect(bp); bp.connect(nGain); nGain.connect(ac.destination);
+    bp.frequency.value = 1800;  // 少し高めで軽く
+    bp.Q.value = 1.0;
     nGain.gain.setValueAtTime(0.0001, t);
-    nGain.gain.linearRampToValueAtTime(0.55, t + 0.002); // 瞬間的な打撃
-    nGain.gain.exponentialRampToValueAtTime(0.001, t + 0.052);
-    noise.start(t); noise.stop(t + 0.06);
+    nGain.gain.linearRampToValueAtTime(0.28, t + 0.002); // 打撃を軽めに
+    nGain.gain.exponentialRampToValueAtTime(0.001, t + 0.038);
+    noise.start(t); noise.stop(t + 0.045);
 
-    // ── ② 低域成分：盤の「ドン」響き（固定周波数、スイープなし）
+    // ── ② 低域成分：盤の響き（控えめに）
     const sub = ac.createOscillator();
     const sGain = ac.createGain();
     sub.connect(sGain); sGain.connect(ac.destination);
     sub.type = 'sine';
-    sub.frequency.value = 130; // 固定
+    sub.frequency.value = 160; // 少し高めで軽く
     sGain.gain.setValueAtTime(0.0001, t);
-    sGain.gain.linearRampToValueAtTime(0.22, t + 0.003);
-    sGain.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
-    sub.start(t); sub.stop(t + 0.10);
+    sGain.gain.linearRampToValueAtTime(0.10, t + 0.003);
+    sGain.gain.exponentialRampToValueAtTime(0.001, t + 0.07);
+    sub.start(t); sub.stop(t + 0.075);
   } catch(e) {}
 }
 

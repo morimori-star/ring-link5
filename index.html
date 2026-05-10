@@ -452,32 +452,41 @@ function getAudioCtx() {
   return _audioCtx;
 }
 
-// 配置音：固めのコトッ
+// 配置音：碁石が盤に置かれる「カチッ」
 function soundPlace() {
   try {
     const ac = getAudioCtx();
-    // ── メイン：鋭い立ち上がり＋速い減衰（コトッの本体）
-    const osc = ac.createOscillator();
-    const gain = ac.createGain();
-    osc.connect(gain); gain.connect(ac.destination);
-    osc.type = 'triangle';
     const t = ac.currentTime;
-    osc.frequency.setValueAtTime(480, t);
-    osc.frequency.exponentialRampToValueAtTime(105, t + 0.09);
-    gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.linearRampToValueAtTime(0.38, t + 0.006); // 瞬間的な立ち上がり
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.11);
-    osc.start(t); osc.stop(t + 0.12);
-    // ── サブ：低域の残響（コトッの"胴鳴り"）
+
+    // ── ① ノイズ成分：石と盤の衝突「カチ」
+    const bufLen = Math.floor(ac.sampleRate * 0.055);
+    const buf = ac.createBuffer(1, bufLen, ac.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < bufLen; i++) d[i] = Math.random() * 2 - 1;
+    const noise = ac.createBufferSource();
+    noise.buffer = buf;
+    // バンドパス：1.2kHz 付近の「カチ」帯域だけ通す
+    const bp = ac.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.frequency.value = 1200;
+    bp.Q.value = 1.2;
+    const nGain = ac.createGain();
+    noise.connect(bp); bp.connect(nGain); nGain.connect(ac.destination);
+    nGain.gain.setValueAtTime(0.0001, t);
+    nGain.gain.linearRampToValueAtTime(0.55, t + 0.002); // 瞬間的な打撃
+    nGain.gain.exponentialRampToValueAtTime(0.001, t + 0.052);
+    noise.start(t); noise.stop(t + 0.06);
+
+    // ── ② 低域成分：盤の「ドン」響き（固定周波数、スイープなし）
     const sub = ac.createOscillator();
-    const subGain = ac.createGain();
-    sub.connect(subGain); subGain.connect(ac.destination);
+    const sGain = ac.createGain();
+    sub.connect(sGain); sGain.connect(ac.destination);
     sub.type = 'sine';
-    sub.frequency.setValueAtTime(95, t);
-    subGain.gain.setValueAtTime(0.0001, t);
-    subGain.gain.linearRampToValueAtTime(0.18, t + 0.008);
-    subGain.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
-    sub.start(t); sub.stop(t + 0.15);
+    sub.frequency.value = 130; // 固定
+    sGain.gain.setValueAtTime(0.0001, t);
+    sGain.gain.linearRampToValueAtTime(0.22, t + 0.003);
+    sGain.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+    sub.start(t); sub.stop(t + 0.10);
   } catch(e) {}
 }
 

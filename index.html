@@ -704,9 +704,12 @@ function scoreMove(pos) {
 
   if (oppWin) return 5000; // 全難易度：相手の即勝はブロック
 
-  // ── 入門：ほぼランダム、自分のチェーンを少し伸ばすだけ ─────
+  // ── 入門：4連はブロック、あとは自分の攻めを優先しつつランダムなミスあり ──
   if (cpuDifficulty === 'easy') {
-    return myBest * 15 + captureCount * 30 + Math.random() * 300;
+    if (oppBest >= 4) return 4600;           // 相手の4連だけはブロック
+    const offScore = myBest  * myBest  * 18; // 攻め（普通の28より弱め）
+    const defScore = oppBest * 8;            // 守り（線形・弱い）
+    return offScore + defScore + captureCount * 50 + Math.random() * 100;
   }
 
   // ── 普通 / 強い 共通：封鎖脅威チェック ──────────────────

@@ -452,20 +452,32 @@ function getAudioCtx() {
   return _audioCtx;
 }
 
-// 配置音：柔らかい低音のぽとっ
+// 配置音：固めのコトッ
 function soundPlace() {
   try {
     const ac = getAudioCtx();
+    // ── メイン：鋭い立ち上がり＋速い減衰（コトッの本体）
     const osc = ac.createOscillator();
     const gain = ac.createGain();
     osc.connect(gain); gain.connect(ac.destination);
     osc.type = 'triangle';
     const t = ac.currentTime;
-    osc.frequency.setValueAtTime(190, t);
-    osc.frequency.exponentialRampToValueAtTime(90, t + 0.14);
-    gain.gain.setValueAtTime(0.22, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
-    osc.start(t); osc.stop(t + 0.18);
+    osc.frequency.setValueAtTime(480, t);
+    osc.frequency.exponentialRampToValueAtTime(105, t + 0.09);
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.linearRampToValueAtTime(0.38, t + 0.006); // 瞬間的な立ち上がり
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.11);
+    osc.start(t); osc.stop(t + 0.12);
+    // ── サブ：低域の残響（コトッの"胴鳴り"）
+    const sub = ac.createOscillator();
+    const subGain = ac.createGain();
+    sub.connect(subGain); subGain.connect(ac.destination);
+    sub.type = 'sine';
+    sub.frequency.setValueAtTime(95, t);
+    subGain.gain.setValueAtTime(0.0001, t);
+    subGain.gain.linearRampToValueAtTime(0.18, t + 0.008);
+    subGain.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+    sub.start(t); sub.stop(t + 0.15);
   } catch(e) {}
 }
 

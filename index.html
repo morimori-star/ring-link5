@@ -70,6 +70,15 @@ canvas{display:block;width:100%;height:auto;border:1px solid #161628;border-radi
 #btn-pvp:hover,#btn-pvp:active{background:#1a1010;border-color:#993333;color:#ff8888}
 #btn-cpu:hover,#btn-cpu:active{background:#10101a;border-color:#333399;color:#8888ff}
 #btn-tut:hover,#btn-tut:active{background:#0d1a0d;border-color:#336633;color:#88cc88}
+/* 難易度選択 */
+#diff-select{display:none;flex-direction:column;align-items:center;gap:14px;width:100%}
+#diff-label{font-size:clamp(9px,2.5vw,11px);letter-spacing:3px;color:#444;text-transform:uppercase}
+#btn-easy:hover,#btn-easy:active{background:#0d1a0d;border-color:#336633;color:#88ee88}
+#btn-normal:hover,#btn-normal:active{background:#10101a;border-color:#333399;color:#8888ff}
+#btn-hard:hover,#btn-hard:active{background:#1a0d0d;border-color:#883322;color:#ff8866}
+#btn-back{padding:7px 20px;background:transparent;color:#444;border:1px solid #252535;
+  border-radius:6px;font-size:11px;letter-spacing:2px;cursor:pointer;transition:all .2s}
+#btn-back:hover{color:#888;border-color:#444}
 /* チュートリアルパネル */
 #tut-panel{display:none;width:100%;max-width:800px;
   background:rgba(6,6,20,0.97);border:1px solid #1a1a44;border-radius:8px;
@@ -122,10 +131,21 @@ canvas{display:block;width:100%;height:auto;border:1px solid #161628;border-radi
 <div id="wrap">
   <canvas id="cv" width="800" height="620"></canvas>
   <div id="start">
-    <div id="start-label">Mode Select</div>
-    <button class="btn-mode" id="btn-pvp">👥 Player vs Player</button>
-    <button class="btn-mode" id="btn-cpu">🤖 Player vs CPU</button>
-    <button class="btn-mode" id="btn-tut">📖 チュートリアル</button>
+    <!-- モード選択パネル -->
+    <div id="mode-select" style="display:flex;flex-direction:column;align-items:center;gap:14px;width:100%">
+      <div id="start-label">Mode Select</div>
+      <button class="btn-mode" id="btn-pvp">👥 Player vs Player</button>
+      <button class="btn-mode" id="btn-cpu">🤖 Player vs CPU</button>
+      <button class="btn-mode" id="btn-tut">📖 チュートリアル</button>
+    </div>
+    <!-- 難易度選択パネル -->
+    <div id="diff-select">
+      <div id="diff-label">CPU 難易度</div>
+      <button class="btn-mode" id="btn-easy">🌱 入門</button>
+      <button class="btn-mode" id="btn-normal">⚔️ 普通</button>
+      <button class="btn-mode" id="btn-hard">🔥 強い</button>
+      <button id="btn-back">← 戻る</button>
+    </div>
   </div>
   <!-- 大テキスト（一時表示・盤面は透けて見える） -->
   <div id="over">
@@ -421,6 +441,7 @@ function saveState() {
 }
 const CPU_PL    = 2;
 const CPU_DELAY = 1500; // ms（タッチ操作時に何が起きたかわかるよう余裕を持たせる）
+let cpuDifficulty = 'normal'; // 'easy' | 'normal' | 'hard'
 const TOUCH_LIFT = 100; // タッチ時にスナップ位置を指より上にずらすオフセット（canvas単位）
 
 // ---- 幾何 ----
@@ -654,7 +675,7 @@ function getCandidates() {
   return cands;
 }
 
-// 候補位置のスコアを計算
+// 候補位置のスコアを計算（難易度対応）
 function scoreMove(pos) {
   const opp = 1;
 
@@ -662,9 +683,10 @@ function scoreMove(pos) {
   const tmp = {x: pos.x, y: pos.y, r: R, p: CPU_PL};
   circles.push(tmp);
   if (checkWin(CPU_PL)) { circles.pop(); return 10000; }
-  const myChains  = getLineChains(CPU_PL).filter(ch => ch.includes(tmp));
-  const myBest    = myChains.reduce((m, ch) => Math.max(m, ch.length), 1);
-  const my4Count  = myChains.filter(ch => ch.length >= 4).length; // 4連チェーン数
+  const myChains     = getLineChains(CPU_PL).filter(ch => ch.includes(tmp));
+  const myBest       = myChains.reduce((m, ch) => Math.max(m, ch.length), 1);
+  const my4Count     = myChains.filter(ch => ch.length >= 4).length;
+  const my3Count     = myChains.filter(ch => ch.length >= 3).length;
   const captureCount = live().filter(c =>
     c.p === opp && touching(c, tmp) && getPressure(c, CPU_PL) > getQi(c)
   ).length;
@@ -673,15 +695,21 @@ function scoreMove(pos) {
   // ---- 相手が置いた場合（防御評価） ----
   const tmp2 = {x: pos.x, y: pos.y, r: R, p: opp};
   circles.push(tmp2);
-  const oppWin     = !!checkWin(opp);
-  const oppChains  = getLineChains(opp).filter(ch => ch.includes(tmp2));
-  const oppBest    = oppChains.reduce((m, ch) => Math.max(m, ch.length), 0);
-  const opp4Count  = oppChains.filter(ch => ch.length >= 4).length; // 相手4連チェーン数
+  const oppWin    = !!checkWin(opp);
+  const oppChains = getLineChains(opp).filter(ch => ch.includes(tmp2));
+  const oppBest   = oppChains.reduce((m, ch) => Math.max(m, ch.length), 0);
+  const opp4Count = oppChains.filter(ch => ch.length >= 4).length;
+  const opp3Count = oppChains.filter(ch => ch.length >= 3).length;
   circles.pop();
 
-  if (oppWin) return 5000; // 相手の即勝をブロック
+  if (oppWin) return 5000; // 全難易度：相手の即勝はブロック
 
-  // ---- 封鎖脅威チェック ----
+  // ── 入門：ほぼランダム、自分のチェーンを少し伸ばすだけ ─────
+  if (cpuDifficulty === 'easy') {
+    return myBest * 15 + captureCount * 30 + Math.random() * 300;
+  }
+
+  // ── 普通 / 強い 共通：封鎖脅威チェック ──────────────────
   const virtualOpp = sealedSpots
     .filter(s => s.until > totalTurns)
     .map(s => ({x: s.x, y: s.y, r: R, p: opp}));
@@ -691,31 +719,30 @@ function scoreMove(pos) {
     sealedWinThreat = !!checkWin(opp);
     virtualOpp.forEach(() => circles.pop());
   }
-
-  // ---- 優先度順スコア ----
-
-  // CPU がダブル4連（二刀流）を作れる → 相手はブロックしきれず確実に勝てる
-  if (my4Count >= 2) return 9500;
-
-  // CPU が4連を作れる → 次の手で勝ち
-  if (myBest >= 4) return 4800 + captureCount * 100;
-
-  // 相手がダブル4連を作れる位置 → 最優先でブロック
-  if (opp4Count >= 2) return 4700;
-
-  // 相手が4連を作れる位置 → ブロック必須
-  if (oppBest >= 4) return 4600 + myBest * 50;
-
-  // 封鎖解除後に相手が勝てる → 自分の勝ちを急ぐ（攻勢係数5倍）
   const offMult  = sealedWinThreat ? 5 : 1;
   const capBonus = sealedWinThreat ? captureCount * 400 : captureCount * 280;
 
-  // 通常評価：攻撃（二乗×28）＋防御（二乗×22）
-  // 二乗スケーリングにより3連鎖の脅威を大幅に重視
-  const offScore = myBest  * myBest  * 28 * offMult;
-  const defScore = oppBest * oppBest * 22;
+  // ── 普通 ─────────────────────────────────────────────
+  if (cpuDifficulty === 'normal') {
+    if (my4Count >= 2) return 9500;
+    if (myBest >= 4)   return 4800 + captureCount * 100;
+    if (opp4Count >= 2) return 4700;
+    if (oppBest >= 4)   return 4600 + myBest * 50;
+    const offScore = myBest  * myBest  * 28 * offMult;
+    const defScore = oppBest * oppBest * 22;
+    return offScore + defScore + capBonus + Math.random() * 8;
+  }
 
-  return offScore + defScore + capBonus + Math.random() * 8;
+  // ── 強い：3連ダブル脅威まで読む、ランダム幅最小 ────────
+  if (my4Count >= 2)  return 9500;
+  if (myBest >= 4)    return 4800 + captureCount * 100;
+  if (opp4Count >= 2) return 4700;
+  if (oppBest >= 4)   return 4600 + myBest * 50;
+  if (my3Count >= 2)  return 3200 + captureCount * 80;  // ダブル3連の構築→次の2手で詰み
+  if (opp3Count >= 2) return 3100 + myBest * 40;        // 相手のダブル3連を先に潰す
+  const offScore = myBest  * myBest  * 34 * offMult;
+  const defScore = oppBest * oppBest * 28;
+  return offScore + defScore + capBonus + Math.random() * 3;
 }
 
 // CPUのターン処理
@@ -763,7 +790,9 @@ function updateHUD() {
   const mv = document.getElementById('mid-val');
   mv.textContent = `P${turn}`;
   mv.style.color = turn===1 ? '#ff5555' : '#5555ff';
-  document.getElementById('p2name').textContent = mode === 'cpu' ? 'CPU' : 'Player 2';
+  const diffLabel = {easy:'入門', normal:'普通', hard:'強い'};
+  document.getElementById('p2name').textContent =
+    mode === 'cpu' ? `CPU ${diffLabel[cpuDifficulty]}` : 'Player 2';
   if (state==='play') {
     if (mode === 'cpu' && turn === CPU_PL)
       msgEl.textContent = '🤖 CPU が考えています…';
@@ -1214,6 +1243,9 @@ function startGame(selectedMode) {
   mode = selectedMode;
   circles=[]; turn=1; state='play'; winGroup=[]; snapPos=null;
   sealedSpots=[]; totalTurns=0; history=[];
+  // 難易度パネルを閉じてモード選択に戻しておく
+  document.getElementById('mode-select').style.display = 'flex';
+  document.getElementById('diff-select').style.display = 'none';
   document.getElementById('start').style.display = 'none';
   overEl.classList.remove('show');
   overCorner.classList.remove('show');
@@ -1223,7 +1255,26 @@ function startGame(selectedMode) {
 }
 
 document.getElementById('btn-pvp').addEventListener('click', () => startGame('pvp'));
-document.getElementById('btn-cpu').addEventListener('click', () => startGame('cpu'));
+
+// CPU → 難易度選択パネルへ
+document.getElementById('btn-cpu').addEventListener('click', () => {
+  document.getElementById('mode-select').style.display = 'none';
+  document.getElementById('diff-select').style.display = 'flex';
+});
+document.getElementById('btn-back').addEventListener('click', () => {
+  document.getElementById('diff-select').style.display = 'none';
+  document.getElementById('mode-select').style.display = 'flex';
+});
+document.getElementById('btn-easy').addEventListener('click', () => {
+  cpuDifficulty = 'easy'; startGame('cpu');
+});
+document.getElementById('btn-normal').addEventListener('click', () => {
+  cpuDifficulty = 'normal'; startGame('cpu');
+});
+document.getElementById('btn-hard').addEventListener('click', () => {
+  cpuDifficulty = 'hard'; startGame('cpu');
+});
+
 document.getElementById('btn-tut').addEventListener('click', startTutorial);
 
 // チュートリアルパネルのボタン
@@ -1239,6 +1290,8 @@ document.getElementById('btn-restart').addEventListener('click', () => {
   overEl.classList.remove('show');
   overCorner.classList.remove('show');
   restartArea.classList.remove('show');
+  document.getElementById('mode-select').style.display = 'flex';
+  document.getElementById('diff-select').style.display = 'none';
   document.getElementById('start').style.display = 'flex';
   circles=[]; turn=1; state='play'; winGroup=[]; snapPos=null;
   sealedSpots=[]; totalTurns=0; history=[];

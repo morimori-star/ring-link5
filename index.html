@@ -444,6 +444,99 @@ const CPU_DELAY = 1500; // ms（タッチ操作時に何が起きたかわかる
 let cpuDifficulty = 'normal'; // 'easy' | 'normal' | 'hard'
 const TOUCH_LIFT = 100; // タッチ時にスナップ位置を指より上にずらすオフセット（canvas単位）
 
+// ---- サウンド（Web Audio API） ----
+let _audioCtx = null;
+function getAudioCtx() {
+  if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (_audioCtx.state === 'suspended') _audioCtx.resume();
+  return _audioCtx;
+}
+
+// 配置音：柔らかい低音のぽとっ
+function soundPlace() {
+  try {
+    const ac = getAudioCtx();
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.connect(gain); gain.connect(ac.destination);
+    osc.type = 'triangle';
+    const t = ac.currentTime;
+    osc.frequency.setValueAtTime(190, t);
+    osc.frequency.exponentialRampToValueAtTime(90, t + 0.14);
+    gain.gain.setValueAtTime(0.22, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+    osc.start(t); osc.stop(t + 0.18);
+  } catch(e) {}
+}
+
+// 捕獲音：すうっと消える感じ（数が多いほど連続）
+function soundCapture(count) {
+  try {
+    const ac = getAudioCtx();
+    const n = Math.min(count, 4);
+    for (let i = 0; i < n; i++) {
+      const delay = i * 0.09;
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.connect(gain); gain.connect(ac.destination);
+      osc.type = 'sine';
+      const t = ac.currentTime + delay;
+      osc.frequency.setValueAtTime(320, t);
+      osc.frequency.exponentialRampToValueAtTime(65, t + 0.38);
+      gain.gain.setValueAtTime(0.18, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.42);
+      osc.start(t); osc.stop(t + 0.42);
+    }
+  } catch(e) {}
+}
+
+// チェーン音：チェーン長に応じた柔らかいチャイム
+function soundChain(length) {
+  // 3→ミ、4→ミ+ソ、5→ミ+ソ+ラ+ド（落ち着いたアルペジオ）
+  const notes = {
+    3: [523],
+    4: [523, 622],
+    5: [523, 622, 698, 880],
+  }[Math.min(length, 5)] || [523];
+  try {
+    const ac = getAudioCtx();
+    notes.forEach((freq, i) => {
+      const delay = i * 0.1;
+      const osc  = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.connect(gain); gain.connect(ac.destination);
+      osc.type = 'sine';
+      const t = ac.currentTime + delay;
+      osc.frequency.setValueAtTime(freq, t);
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.linearRampToValueAtTime(0.17, t + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.55);
+      osc.start(t); osc.stop(t + 0.6);
+    });
+  } catch(e) {}
+}
+
+// 勝利音：上昇アルペジオ
+function soundWin() {
+  const freqs = [440, 554, 659, 880];
+  try {
+    const ac = getAudioCtx();
+    freqs.forEach((freq, i) => {
+      const delay = i * 0.13;
+      const osc  = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.connect(gain); gain.connect(ac.destination);
+      osc.type = 'sine';
+      const t = ac.currentTime + delay;
+      osc.frequency.setValueAtTime(freq, t);
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.linearRampToValueAtTime(0.22, t + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.7);
+      osc.start(t); osc.stop(t + 0.75);
+    });
+  } catch(e) {}
+}
+
 // ---- 幾何 ----
 function d2(a, b) { return (a.x-b.x)**2 + (a.y-b.y)**2; }
 function touching(a, b) { return d2(a, b) < (2*R + 2)**2; }
@@ -762,6 +855,7 @@ function cpuTurn() {
   if (!best) { turn = 1; updateHUD(); return; }
 
   saveState();
+  const prevBestCpu = getLineChains(CPU_PL).reduce((m, c) => Math.max(m, c.length), 0);
   const newCircle = {x: best.x, y: best.y, r: R, p: CPU_PL, justPlaced: performance.now()};
   circles.push(newCircle);
 
@@ -769,13 +863,21 @@ function cpuTurn() {
   if (won) {
     winGroup = won;
     state = 'over';
+    soundWin();
     showWin('CPU WIN!', '#5555ff', `CPU が ${won.length} 個直線に並べました！`);
     return;
   }
 
   totalTurns++;
   const captured = doQiCaptures(newCircle, CPU_PL);
-  if (captured > 0) msgEl.textContent = `🤖 CPU が気で ${captured}個の円を取りました！`;
+  if (captured > 0) {
+    msgEl.textContent = `🤖 CPU が気で ${captured}個の円を取りました！`;
+    soundCapture(captured);
+  } else {
+    const newBestCpu = getLineChains(CPU_PL).reduce((m, c) => Math.max(m, c.length), 0);
+    if (newBestCpu >= 3 && newBestCpu > prevBestCpu) soundChain(newBestCpu);
+    else soundPlace();
+  }
 
   turn = 1;
   snapPos = null;
@@ -1156,6 +1258,7 @@ function handlePlace(mx, my, precomputed) {
   }
 
   saveState();
+  const prevBest = getLineChains(turn).reduce((m, c) => Math.max(m, c.length), 0);
   const newCircle = {x: pos.x, y: pos.y, r: R, p: turn};
   circles.push(newCircle);
 
@@ -1163,6 +1266,7 @@ function handlePlace(mx, my, precomputed) {
   if (won) {
     winGroup = won;
     state = 'over';
+    soundWin();
     const col = turn===1 ? '#ff5555' : '#5555ff';
     showWin(`PLAYER ${turn} WIN!`, col, `🎉 Player ${turn} が ${won.length} 個直線に並べました！`);
     return;
@@ -1170,7 +1274,14 @@ function handlePlace(mx, my, precomputed) {
 
   totalTurns++;
   const captured = doQiCaptures(newCircle, turn);
-  if (captured > 0) msgEl.textContent = `💨 ${captured}個の円を気で取りました！`;
+  if (captured > 0) {
+    msgEl.textContent = `💨 ${captured}個の円を気で取りました！`;
+    soundCapture(captured);
+  } else {
+    const newBest = getLineChains(turn).reduce((m, c) => Math.max(m, c.length), 0);
+    if (newBest >= 3 && newBest > prevBest) soundChain(newBest);
+    else soundPlace();
+  }
 
   turn = turn === 1 ? 2 : 1;
   snapPos = findSnap(mx, my);

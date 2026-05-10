@@ -106,6 +106,23 @@ canvas{display:block;width:100%;height:auto;border:1px solid #161628;border-radi
   letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s}
 #tut-pvp:hover{background:#1a1010;border-color:#993333;color:#ff8888}
 #tut-cpu:hover{background:#10101a;border-color:#333399;color:#8888ff}
+/* 統計パネル */
+#stats-box{width:100%;max-width:260px;text-align:center;margin-top:8px;padding-top:10px;
+  border-top:1px solid #151525}
+.stats-label{font-size:9px;letter-spacing:3px;color:#334;text-transform:uppercase;margin-bottom:5px}
+.stats-row{font-size:clamp(10px,2.5vw,12px);color:#4a5a6a;letter-spacing:1px;margin-bottom:3px;line-height:1.8}
+.stats-row .sn{color:#7a9ab0;font-weight:bold}
+.stats-row .sw{color:#668844}
+.stats-row .sl{color:#884444}
+#stats-reset-btn{margin-top:8px;background:transparent;color:#2a3a44;
+  border:1px solid #1a2530;border-radius:5px;font-size:10px;letter-spacing:2px;
+  padding:4px 12px;cursor:pointer;transition:all .2s}
+#stats-reset-btn:hover{color:#556677;border-color:#334455}
+/* 難易度選択内の個別勝敗 */
+#diff-stats{margin-top:4px;font-size:10px;color:#334455;letter-spacing:1px;text-align:center}
+#diff-stats span{margin:0 4px}
+#diff-stats .sw{color:#557744}
+#diff-stats .sl{color:#774444}
 </style>
 </head>
 <body>
@@ -144,7 +161,24 @@ canvas{display:block;width:100%;height:auto;border:1px solid #161628;border-radi
       <button class="btn-mode" id="btn-easy">🌱 入門</button>
       <button class="btn-mode" id="btn-normal">⚔️ 普通</button>
       <button class="btn-mode" id="btn-hard">🔥 強い</button>
+      <div id="diff-stats">
+        <span id="dst-easy">入門 0-0</span> ／
+        <span id="dst-normal">普通 0-0</span> ／
+        <span id="dst-hard">強い 0-0</span>
+      </div>
       <button id="btn-back">← 戻る</button>
+    </div>
+    <!-- 統計 -->
+    <div id="stats-box">
+      <div class="stats-label">Record</div>
+      <div class="stats-row" id="stats-pvp-row">
+        PvP &nbsp;— &nbsp;P1 <span class="sn" id="st-p1w">0</span>勝 &nbsp;／&nbsp; P2 <span class="sn" id="st-p2w">0</span>勝
+      </div>
+      <div class="stats-row" id="stats-cpu-row">
+        CPU — <span class="sw" id="st-cpu-w">0</span>勝 &nbsp;<span class="sl" id="st-cpu-l">0</span>敗
+        &nbsp;<span style="color:#2a3a44" id="st-cpu-rate"></span>
+      </div>
+      <button id="stats-reset-btn">リセット</button>
     </div>
   </div>
   <!-- 大テキスト（一時表示・盤面は透けて見える） -->
@@ -887,6 +921,7 @@ function cpuTurn() {
     winGroup = won;
     state = 'over';
     soundWin();
+    recordResult(CPU_PL);
     showWin('CPU WIN!', '#5555ff', `CPU が ${won.length} 個直線に並べました！`);
     return;
   }
@@ -1290,6 +1325,7 @@ function handlePlace(mx, my, precomputed) {
     winGroup = won;
     state = 'over';
     soundWin();
+    recordResult(turn);
     const col = turn===1 ? '#ff5555' : '#5555ff';
     showWin(`PLAYER ${turn} WIN!`, col, `🎉 Player ${turn} が ${won.length} 個直線に並べました！`);
     return;
@@ -1376,6 +1412,70 @@ function showWin(title, color, msg) {
   }, 2500);
 }
 
+// ---- 勝敗統計（localStorage） ----
+const STATS_KEY = 'rl5stats';
+function defaultStats() {
+  return {
+    pvp: { p1: 0, p2: 0 },
+    cpu: {
+      easy:   { win: 0, loss: 0 },
+      normal: { win: 0, loss: 0 },
+      hard:   { win: 0, loss: 0 },
+    }
+  };
+}
+let stats = (() => {
+  try {
+    const s = JSON.parse(localStorage.getItem(STATS_KEY));
+    if (s && s.pvp && s.cpu) return s;
+  } catch(e) {}
+  return defaultStats();
+})();
+
+function saveStats() {
+  try { localStorage.setItem(STATS_KEY, JSON.stringify(stats)); } catch(e) {}
+}
+
+function recordResult(winnerPlayer) {
+  if (tutorialMode) return;
+  if (mode === 'pvp') {
+    if (winnerPlayer === 1) stats.pvp.p1++;
+    else stats.pvp.p2++;
+  } else if (mode === 'cpu') {
+    if (winnerPlayer === 1) stats.cpu[cpuDifficulty].win++;
+    else stats.cpu[cpuDifficulty].loss++;
+  }
+  saveStats();
+}
+
+function renderStats() {
+  document.getElementById('st-p1w').textContent = stats.pvp.p1;
+  document.getElementById('st-p2w').textContent = stats.pvp.p2;
+
+  const cpuW = Object.values(stats.cpu).reduce((s, d) => s + d.win,  0);
+  const cpuL = Object.values(stats.cpu).reduce((s, d) => s + d.loss, 0);
+  document.getElementById('st-cpu-w').textContent = cpuW;
+  document.getElementById('st-cpu-l').textContent = cpuL;
+  const total = cpuW + cpuL;
+  document.getElementById('st-cpu-rate').textContent =
+    total > 0 ? `(${Math.round(cpuW / total * 100)}%)` : '';
+
+  const diffLabel = { easy: '入門', normal: '普通', hard: '強い' };
+  ['easy', 'normal', 'hard'].forEach(d => {
+    const { win, loss } = stats.cpu[d];
+    const el = document.getElementById(`dst-${d}`);
+    el.innerHTML =
+      `${diffLabel[d]} <span class="sw">${win}勝</span><span class="sl">${loss}敗</span>`;
+  });
+}
+
+document.getElementById('stats-reset-btn').addEventListener('click', () => {
+  if (!confirm('記録をすべてリセットしますか？')) return;
+  stats = defaultStats();
+  saveStats();
+  renderStats();
+});
+
 function startGame(selectedMode) {
   mode = selectedMode;
   circles=[]; turn=1; state='play'; winGroup=[]; snapPos=null;
@@ -1434,6 +1534,7 @@ document.getElementById('btn-restart').addEventListener('click', () => {
   sealedSpots=[]; totalTurns=0; history=[];
   msgEl.textContent = '';
   updateHUD();
+  renderStats();
 });
 
 document.getElementById('btn-undo').addEventListener('click', () => {
@@ -1456,6 +1557,7 @@ document.getElementById('btn-undo').addEventListener('click', () => {
 
 // ---- 起動 ----
 updateHUD();
+renderStats();
 requestAnimationFrame(draw);
 </script>
 </body>

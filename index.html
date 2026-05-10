@@ -15,21 +15,6 @@ body{
 h1{font-size:clamp(22px,5.5vw,38px);letter-spacing:clamp(4px,2vw,12px);margin-bottom:12px;text-transform:uppercase}
 h1 .logo-main{color:#777;text-shadow:0 0 18px rgba(160,160,200,0.25)}
 h1 .logo-num{color:#8899cc;text-shadow:0 0 20px rgba(100,120,220,0.45)}
-#hud{display:flex;align-items:stretch;gap:clamp(6px,2vw,16px);width:100%;max-width:800px;margin-bottom:8px}
-.pcard{flex:1;border-radius:10px;padding:clamp(6px,2vw,12px) clamp(8px,2.5vw,18px);text-align:center;transition:opacity .3s,box-shadow .3s}
-.p1{background:rgba(200,50,50,.12);border:2px solid #993333}
-.p2{background:rgba(50,50,200,.12);border:2px solid #333399}
-.pcard.on.p1{border-color:#ff4444;box-shadow:0 0 22px #ff2222}
-.pcard.on.p2{border-color:#4444ff;box-shadow:0 0 22px #2222ff}
-.pcard.off{opacity:.28}
-.pname{font-size:clamp(9px,2vw,11px);letter-spacing:2px;color:#666;margin-bottom:4px;text-transform:uppercase}
-.pcnt{font-size:clamp(18px,5vw,30px);font-weight:bold}
-.p1 .pcnt{color:#ff5555}.p2 .pcnt{color:#5555ff}
-.psub{font-size:clamp(9px,2vw,11px);color:#444;margin-top:3px}
-#mid{min-width:clamp(60px,14vw,110px);text-align:center;display:flex;flex-direction:column;
-     align-items:center;justify-content:center;gap:4px}
-#mid-label{font-size:clamp(8px,2vw,10px);letter-spacing:2px;color:#444;text-transform:uppercase}
-#mid-val{font-size:clamp(16px,5vw,26px);font-weight:bold}
 #wrap{position:relative;width:100%;max-width:800px}
 canvas{display:block;width:100%;height:auto;border:1px solid #161628;border-radius:6px;cursor:crosshair;touch-action:none}
 #msg{margin-top:8px;font-size:clamp(11px,3vw,14px);text-align:center;color:#777;letter-spacing:1px;min-height:18px;width:100%;max-width:800px}
@@ -128,22 +113,6 @@ canvas{display:block;width:100%;height:auto;border:1px solid #161628;border-radi
 <body>
 <h1><span class="logo-main">Ring-Link</span> <span class="logo-num">5</span></h1>
 
-<div id="hud">
-  <div class="pcard p1 on" id="pc1">
-    <div class="pname">Player 1</div>
-    <div class="pcnt" id="cnt1">0</div>
-    <div class="psub">circles</div>
-  </div>
-  <div id="mid">
-    <div id="mid-label">TURN</div>
-    <div id="mid-val" id="turn-val" style="color:#ff5555">P1</div>
-  </div>
-  <div class="pcard p2 off" id="pc2">
-    <div class="pname" id="p2name">Player 2</div>
-    <div class="pcnt" id="cnt2">0</div>
-    <div class="psub">circles</div>
-  </div>
-</div>
 
 <div id="wrap">
   <canvas id="cv" width="800" height="620"></canvas>
@@ -942,23 +911,14 @@ function cpuTurn() {
   updateHUD();
 }
 
-// ---- HUD更新 ----
+// ---- メッセージ更新 ----
 function updateHUD() {
-  document.getElementById('cnt1').textContent = circles.filter(c=>c.p===1).length;
-  document.getElementById('cnt2').textContent = circles.filter(c=>c.p===2).length;
-  document.getElementById('pc1').classList.toggle('on',  turn===1);
-  document.getElementById('pc1').classList.toggle('off', turn!==1);
-  document.getElementById('pc2').classList.toggle('on',  turn===2);
-  document.getElementById('pc2').classList.toggle('off', turn!==2);
-  const mv = document.getElementById('mid-val');
-  mv.textContent = `P${turn}`;
-  mv.style.color = turn===1 ? '#ff5555' : '#5555ff';
-  const diffLabel = {easy:'入門', normal:'普通', hard:'強い'};
-  document.getElementById('p2name').textContent =
-    mode === 'cpu' ? `CPU ${diffLabel[cpuDifficulty]}` : 'Player 2';
-  if (state==='play') {
+  if (state === 'play') {
+    const diffLabel = {easy:'入門', normal:'普通', hard:'強い'};
     if (mode === 'cpu' && turn === CPU_PL)
-      msgEl.textContent = '🤖 CPU が考えています…';
+      msgEl.textContent = `🤖 CPU（${diffLabel[cpuDifficulty]}）が考えています…`;
+    else if (mode === 'cpu')
+      msgEl.textContent = 'あなたのターン';
     else
       msgEl.textContent = `Player ${turn} のターン`;
   }

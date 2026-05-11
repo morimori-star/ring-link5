@@ -94,13 +94,14 @@ strong.hl{color:#ccdde8}
   text-align:center;margin-top:8px}
 
 /* テーブル */
-table{width:100%;border-collapse:collapse;font-size:clamp(14px,3.5vw,16px);margin:12px 0}
-th{background:#0a0a1e;color:#667788;padding:9px 12px;
+table{width:100%;border-collapse:collapse;font-size:clamp(14px,3.5vw,16px);margin:12px 0;
+  border:1px solid #2a2a50}
+th{background:#0a0a1e;color:#7788aa;padding:9px 12px;
    text-align:left;font-weight:normal;letter-spacing:1px;
-   border-bottom:1px solid #1a1a33;white-space:nowrap}
-td{padding:11px 12px;border-bottom:1px solid #0e0e22;color:#9aabb8}
+   border:1px solid #2a2a50;white-space:nowrap}
+td{padding:11px 12px;border:1px solid #1e1e3a;color:#9aabb8}
 td:first-child{color:#ccdde8;white-space:nowrap}
-tr:last-child td{border-bottom:none}
+tr:last-child td{border-bottom:1px solid #1e1e3a}
 
 /* 難易度バッジ */
 .badge{display:inline-block;font-size:12px;padding:2px 9px;
@@ -153,14 +154,14 @@ ul.tips li::before{
       <span class="section-title">目的</span>
     </div>
     <p>同じ色の円を<br><strong class="hl">直線状に 5 個並べたら勝ち。</strong></p>
-    <div class="demo">
-      <div class="ring p1">2</div><div class="cline p1"></div>
-      <div class="ring p1">3</div><div class="cline p1"></div>
-      <div class="ring p1">3</div><div class="cline p1"></div>
-      <div class="ring p1">3</div><div class="cline p1"></div>
-      <div class="ring p1">2</div>
+    <div class="demo" style="flex-wrap:nowrap;overflow-x:auto">
+      <div class="ring p1 sm">2</div><div class="cline p1" style="width:12px;flex-shrink:0"></div>
+      <div class="ring p1 sm">3</div><div class="cline p1" style="width:12px;flex-shrink:0"></div>
+      <div class="ring p1 sm">3</div><div class="cline p1" style="width:12px;flex-shrink:0"></div>
+      <div class="ring p1 sm">3</div><div class="cline p1" style="width:12px;flex-shrink:0"></div>
+      <div class="ring p1 sm">2</div>
     </div>
-    <div class="demo-label">← 赤が5個直線に並んだら赤の勝ち</div>
+    <div class="demo-label">赤が5個一直線に並んだら赤の勝ち</div>
   </div>
 
   <!-- 基本操作 -->
@@ -180,32 +181,8 @@ ul.tips li::before{
       <span class="section-icon">📐</span>
       <span class="section-title">直線のルール（30°以内）</span>
     </div>
-    <p>3個以上が一列として認められるには、隣り合う円の方向が<strong class="hl">30°以内</strong>でなければならない。</p>
-    <p>各円の周囲に表示される<strong class="hl">オレンジ色の弧</strong>の範囲内に次の円を置くと、一列が続く。3個以上つながると自動でラインが表示される。</p>
-    <!-- 2ボックス図解（縦並び） -->
-    <div style="display:flex;flex-direction:column;gap:10px;margin:14px 0">
-      <!-- OK -->
-      <div style="background:rgba(8,8,20,0.7);border:1px solid #1a2a1a;border-radius:8px;padding:14px;text-align:center">
-        <div style="display:flex;align-items:center;justify-content:center;gap:0">
-          <div class="ring p1 sm">1</div><div class="cline p1" style="width:14px"></div>
-          <div class="ring p1 sm">2</div><div class="cline p1" style="width:14px"></div>
-          <div class="ring p1 sm">2</div>
-        </div>
-        <div style="font-size:24px;color:#55bb55;margin-top:6px;line-height:1">✓ &nbsp;<span style="font-size:15px;color:#558844;vertical-align:middle">ほぼ一直線 → OK</span></div>
-      </div>
-      <!-- NG -->
-      <div style="background:rgba(8,8,20,0.7);border:1px solid #2a1a1a;border-radius:8px;padding:14px;text-align:center">
-        <div style="display:inline-grid;grid-template-columns:44px 44px 44px;grid-template-rows:44px 44px;align-items:center;justify-items:center">
-          <div></div>
-          <div></div>
-          <div class="ring p1 sm">1</div>
-          <div class="ring p1 sm">1</div>
-          <div style="font-size:22px;color:#884444">↗</div>
-          <div style="font-size:22px;color:#cc3333">✗</div>
-        </div>
-        <div style="font-size:15px;color:#884444;margin-top:6px">角度が大きすぎる → NG</div>
-      </div>
-    </div>
+    <p>3個以上が一列として認められるには、隣り合う円の向きが<strong class="hl">30°以内</strong>でなければならない。</p>
+    <p>各円の周囲に表示される<strong class="hl">オレンジ色の弧</strong>の中に次の円を置くと一列が続く。3個以上でラインが自動表示される。</p>
   </div>
 
   <!-- 気システム -->
@@ -280,10 +257,11 @@ ul.tips li::before{
       <tr>
         <td>Player vs CPU</td>
         <td>
-          コンピュータと対戦。難易度3段階：<br>
-          <span class="badge badge-easy">入門</span>ランダムな手が多く、初めての方向け<br>
-          <span class="badge badge-normal">普通</span>攻めと守りを基本的に判断する<br>
-          <span class="badge badge-hard">強い</span>2方向同時に勝ち筋を作るなど先を読む
+          コンピュータと対戦。<br>
+          難易度（CPUの強さ）3段階：<br>
+          <span class="badge badge-easy">入門</span>CPUの判断力が弱い<br>
+          <span class="badge badge-normal">普通</span>攻めと守りをバランスよく判断する<br>
+          <span class="badge badge-hard">強い</span>複数の勝ち筋を同時に作るなど先を読む
         </td>
       </tr>
     </table>

@@ -1292,27 +1292,35 @@ function handlePlace(mx, my, precomputed) {
         return;
       }
       // ターゲット位置に正確に配置
+      const prevBestTut = getLineChains(turn).reduce((m, c) => Math.max(m, c.length), 0);
       const placed = {x: step.target.x, y: step.target.y, r: R, p: turn};
       circles.push(placed);
 
       if (step.afterCapture) {
         totalTurns++;
-        doQiCaptures(placed, turn);
+        const captured = doQiCaptures(placed, turn);
+        soundPlace();
+        if (captured > 0) setTimeout(() => soundCapture(captured), 120);
         msgEl.textContent = '💨 捕獲しました！';
         setTimeout(() => advanceTutorial(), 1600);
       } else if (step.isWinStep) {
         const won = checkWin(turn);
         if (won) {
           winGroup = won; state = 'over';
+          soundWin();
           overTitle.textContent = `PLAYER ${turn} WIN!`;
           overTitle.style.color = '#ff5555';
           overEl.classList.add('show');
           msgEl.textContent = '🎉 5個を直線に並べました！';
           setTimeout(() => { overEl.classList.remove('show'); advanceTutorial(); }, 2200);
         } else {
+          soundPlace();
           setTimeout(() => advanceTutorial(), 700);
         }
       } else {
+        const newBestTut = getLineChains(turn).reduce((m, c) => Math.max(m, c.length), 0);
+        if (newBestTut >= 3 && newBestTut > prevBestTut) soundChain(newBestTut);
+        else soundPlace();
         msgEl.textContent = '';
         setTimeout(() => advanceTutorial(), 750);
       }
@@ -1321,6 +1329,7 @@ function handlePlace(mx, my, precomputed) {
       const fx = pos || { x: Math.max(R+4, Math.min(W-R-4, mx)),
                           y: Math.max(R+4, Math.min(H-R-4, my)) };
       circles.push({...fx, r: R, p: turn});
+      soundPlace();
       msgEl.textContent = '';
       setTimeout(() => advanceTutorial(), 750);
     }

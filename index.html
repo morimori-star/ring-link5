@@ -13,9 +13,22 @@ body{
   padding-bottom: max(8px, env(safe-area-inset-bottom));
 }
 .logo-title{font-size:clamp(32px,8vw,60px);letter-spacing:clamp(6px,2.5vw,16px);
-  margin-bottom:2px;text-transform:uppercase;font-weight:bold}
-.logo-main{color:#8899aa;text-shadow:0 0 28px rgba(160,160,220,0.35)}
-.logo-num{color:#99aadd;text-shadow:0 0 30px rgba(120,140,255,0.6)}
+  margin-bottom:2px;text-transform:uppercase;font-weight:bold;
+  animation:logoGlow 2.8s ease-in-out infinite}
+@keyframes logoGlow{
+  0%,100%{filter:drop-shadow(0 0 8px rgba(140,160,255,0.45))}
+  50%{filter:drop-shadow(0 0 22px rgba(160,180,255,0.85))}
+}
+.logo-main{
+  background:linear-gradient(120deg,#ff7777 0%,#bb88ff 50%,#6699ff 100%);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+}
+.logo-num{
+  color:#ffffff;
+  -webkit-text-fill-color:#ffffff;
+  text-shadow:0 0 18px #aabbff,0 0 40px #7788ee,0 0 80px #5566cc;
+}
 .logo-tag{font-size:clamp(10px,2.2vw,13px);letter-spacing:clamp(2px,1.5vw,6px);
   color:#334455;margin-bottom:6px;text-transform:uppercase}
 /* デコレーションリング */

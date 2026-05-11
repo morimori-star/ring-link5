@@ -52,12 +52,12 @@ body{
   margin-bottom:14px;
   padding-bottom:10px;border-bottom:1px solid #141428;
 }
-.section-icon{font-size:20px}
+.section-icon{font-size:22px}
 .section-title{
-  font-size:clamp(12px,3vw,14px);letter-spacing:3px;
+  font-size:clamp(13px,3.5vw,16px);letter-spacing:3px;
   color:#8899bb;text-transform:uppercase;font-weight:normal;
 }
-p{font-size:clamp(13px,3.2vw,14px);color:#9aabb8;margin-bottom:10px;line-height:1.85}
+p{font-size:clamp(15px,4vw,17px);color:#9aabb8;margin-bottom:10px;line-height:1.85}
 p:last-child{margin-bottom:0}
 strong.hl{color:#ccdde8}
 
@@ -65,7 +65,7 @@ strong.hl{color:#ccdde8}
 .tip{
   background:rgba(180,140,0,0.06);border-left:3px solid #665500;
   border-radius:0 6px 6px 0;padding:11px 15px;margin:12px 0;
-  font-size:clamp(12px,3vw,13px);color:#aa9944;line-height:1.7;
+  font-size:clamp(14px,3.5vw,16px);color:#aa9944;line-height:1.75;
 }
 .tip:last-child{margin-bottom:0}
 
@@ -94,16 +94,16 @@ strong.hl{color:#ccdde8}
   text-align:center;margin-top:6px}
 
 /* テーブル */
-table{width:100%;border-collapse:collapse;font-size:13px;margin:12px 0}
-th{background:#0a0a1e;color:#667788;padding:8px 12px;
+table{width:100%;border-collapse:collapse;font-size:clamp(14px,3.5vw,16px);margin:12px 0}
+th{background:#0a0a1e;color:#667788;padding:9px 12px;
    text-align:left;font-weight:normal;letter-spacing:1px;
    border-bottom:1px solid #1a1a33}
-td{padding:10px 12px;border-bottom:1px solid #0e0e22;color:#9aabb8}
+td{padding:11px 12px;border-bottom:1px solid #0e0e22;color:#9aabb8}
 td:first-child{color:#ccdde8;white-space:nowrap}
 tr:last-child td{border-bottom:none}
 
 /* 難易度バッジ */
-.badge{display:inline-block;font-size:11px;padding:2px 9px;
+.badge{display:inline-block;font-size:12px;padding:2px 9px;
   border-radius:4px;margin-right:6px;vertical-align:middle;font-weight:bold}
 .badge-easy{background:rgba(80,180,80,0.12);color:#66bb66;border:1px solid #336633}
 .badge-normal{background:rgba(80,80,200,0.12);color:#6688dd;border:1px solid #333388}
@@ -112,9 +112,9 @@ tr:last-child td{border-bottom:none}
 /* 戦略リスト */
 ul.tips{padding-left:0;list-style:none;margin:0}
 ul.tips li{
-  padding:8px 12px 8px 32px;position:relative;
-  font-size:clamp(13px,3.2vw,14px);color:#9aabb8;
-  border-bottom:1px solid #0e0e22;line-height:1.75;
+  padding:9px 12px 9px 32px;position:relative;
+  font-size:clamp(15px,4vw,17px);color:#9aabb8;
+  border-bottom:1px solid #0e0e22;line-height:1.8;
 }
 ul.tips li:last-child{border-bottom:none}
 ul.tips li::before{
@@ -152,7 +152,7 @@ ul.tips li::before{
       <span class="section-icon">🎯</span>
       <span class="section-title">目的</span>
     </div>
-    <p>同じ色の円を<strong class="hl">直線状に 5 個</strong>並べたら勝ち。</p>
+    <p>同じ色の円を<strong class="hl" style="white-space:nowrap">直線状に 5 個並べたら勝ち。</strong></p>
     <div class="demo">
       <div class="ring p1">2</div><div class="cline p1"></div>
       <div class="ring p1">3</div><div class="cline p1"></div>

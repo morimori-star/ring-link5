@@ -63,6 +63,11 @@ canvas{display:block;width:100%;height:auto;background:#0d0d22;border:1.5px soli
 #over-corner-title{font-size:clamp(11px,3vw,14px);font-weight:bold;letter-spacing:2px}
 
 /* RESTARTボタン・UNDOボタン（盤面の下） */
+#menu-bar{display:none;justify-content:flex-end;width:100%;max-width:800px;margin-top:6px}
+#menu-bar.show{display:flex}
+#btn-menu{padding:5px 14px;background:transparent;color:#556677;border:1px solid #334455;
+  border-radius:6px;font-size:12px;letter-spacing:1px;cursor:pointer;transition:all .2s}
+#btn-menu:hover,#btn-menu:active{color:#99bbcc;border-color:#5588aa}
 #restart-area{display:none;margin-top:12px}
 #restart-area.show{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap}
 #btn-undo{padding:10px 24px;font-size:clamp(12px,3.5vw,14px);letter-spacing:2px;text-transform:uppercase;
@@ -209,6 +214,11 @@ canvas{display:block;width:100%;height:auto;background:#0d0d22;border:1.5px soli
     </div>
     <button id="tut-skip">スキップ</button>
   </div>
+</div>
+
+<!-- メニューボタン（ゲーム中常時表示） -->
+<div id="menu-bar">
+  <button id="btn-menu">← メニュー</button>
 </div>
 
 <!-- RESTARTボタンは盤面の下 -->
@@ -368,6 +378,7 @@ function startTutorial() {
   document.getElementById('msg').style.display = 'none';
   document.getElementById('rules').style.display = 'none';
   document.getElementById('rules-link').style.display = 'none';
+  document.getElementById('menu-bar').classList.remove('show');
   document.getElementById('tut-panel').classList.add('show');
   showTutStep(0);
 }
@@ -1492,6 +1503,7 @@ function showStartScreen() {
   msgEl.style.display = 'none';
   document.getElementById('rules').style.display = 'none';
   document.getElementById('rules-link').style.display = 'none';
+  document.getElementById('menu-bar').classList.remove('show');
   renderStats();
 }
 
@@ -1507,6 +1519,7 @@ function startGame(selectedMode) {
   msgEl.textContent = '';
   document.getElementById('rules').style.display = '';
   document.getElementById('rules-link').style.display = '';
+  document.getElementById('menu-bar').classList.add('show');
   updateHUD();
 }
 
@@ -1567,6 +1580,18 @@ document.getElementById('btn-undo').addEventListener('click', () => {
   restartArea.classList.remove('show');
   msgEl.textContent = `↩ 1手戻しました — Player ${turn} のターン`;
   updateHUD();
+});
+
+document.getElementById('btn-menu').addEventListener('click', () => {
+  if (circles.length > 0 && state === 'play') {
+    if (!confirm('ゲームを中断してメニューに戻りますか？')) return;
+  }
+  overEl.classList.remove('show');
+  overCorner.classList.remove('show');
+  restartArea.classList.remove('show');
+  circles=[]; turn=1; state='play'; winGroup=[]; snapPos=null;
+  sealedSpots=[]; totalTurns=0; history=[];
+  showStartScreen();
 });
 
 // ---- 起動 ----

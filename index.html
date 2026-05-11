@@ -12,10 +12,22 @@ body{
   padding:8px;
   padding-bottom: max(8px, env(safe-area-inset-bottom));
 }
-.logo-title{font-size:clamp(22px,5.5vw,38px);letter-spacing:clamp(4px,2vw,12px);
-  margin-bottom:4px;text-transform:uppercase;font-weight:bold}
-.logo-main{color:#777;text-shadow:0 0 18px rgba(160,160,200,0.25)}
-.logo-num{color:#8899cc;text-shadow:0 0 20px rgba(100,120,220,0.45)}
+.logo-title{font-size:clamp(32px,8vw,60px);letter-spacing:clamp(6px,2.5vw,16px);
+  margin-bottom:2px;text-transform:uppercase;font-weight:bold}
+.logo-main{color:#8899aa;text-shadow:0 0 28px rgba(160,160,220,0.35)}
+.logo-num{color:#99aadd;text-shadow:0 0 30px rgba(120,140,255,0.6)}
+.logo-tag{font-size:clamp(10px,2.2vw,13px);letter-spacing:clamp(2px,1.5vw,6px);
+  color:#334455;margin-bottom:6px;text-transform:uppercase}
+/* デコレーションリング */
+@keyframes rfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+@keyframes rfloatR{0%,100%{transform:translateY(-8px)}50%{transform:translateY(8px)}}
+.dr{position:absolute;border-radius:50%;pointer-events:none;border:2.5px solid}
+.dr.p1{border-color:rgba(210,65,65,0.45);box-shadow:0 0 30px rgba(200,50,50,0.18)}
+.dr.p2{border-color:rgba(65,65,210,0.45);box-shadow:0 0 30px rgba(50,50,200,0.18)}
+.dr.s0{width:72px;height:72px;animation:rfloat 3.2s ease-in-out infinite}
+.dr.s1{width:52px;height:52px;animation:rfloatR 4.1s ease-in-out infinite}
+.dr.s2{width:96px;height:96px;animation:rfloat 5.0s ease-in-out infinite}
+.dr.s3{width:40px;height:40px;animation:rfloatR 3.7s ease-in-out infinite}
 #wrap{position:relative;width:100%;max-width:800px}
 canvas{display:block;width:100%;height:auto;background:#0d0d22;border:1.5px solid #2d2d55;border-radius:6px;cursor:crosshair;touch-action:none}
 #msg{margin-top:8px;font-size:clamp(11px,3vw,14px);text-align:center;color:#777;letter-spacing:1px;min-height:18px;width:100%;max-width:800px}
@@ -116,8 +128,18 @@ canvas{display:block;width:100%;height:auto;background:#0d0d22;border:1.5px soli
 <div id="wrap">
   <canvas id="cv" width="800" height="620"></canvas>
   <div id="start">
+    <!-- デコレーションリング（背景に浮かぶ） -->
+    <div class="dr p1 s2" style="top:4%;left:3%;opacity:.7;animation-delay:0s"></div>
+    <div class="dr p1 s0" style="top:10%;left:12%;opacity:.5;animation-delay:-1.1s"></div>
+    <div class="dr p1 s1" style="top:20%;left:5%;opacity:.4;animation-delay:-2.3s"></div>
+    <div class="dr p2 s2" style="bottom:5%;right:3%;opacity:.7;animation-delay:-0.7s"></div>
+    <div class="dr p2 s0" style="bottom:12%;right:13%;opacity:.5;animation-delay:-1.8s"></div>
+    <div class="dr p2 s1" style="bottom:22%;right:5%;opacity:.4;animation-delay:-3.0s"></div>
+    <div class="dr p1 s3" style="top:55%;left:2%;opacity:.35;animation-delay:-2.0s"></div>
+    <div class="dr p2 s3" style="top:40%;right:2%;opacity:.35;animation-delay:-0.4s"></div>
     <!-- タイトル -->
     <div class="logo-title"><span class="logo-main">Ring-Link</span> <span class="logo-num">5</span></div>
+    <div class="logo-tag">円でつなぐ 5 目並べ</div>
     <!-- モード選択パネル -->
     <div id="mode-select" style="display:flex;flex-direction:column;align-items:center;gap:14px;width:100%">
       <button class="btn-mode" id="btn-pvp">👥 Player vs Player</button>

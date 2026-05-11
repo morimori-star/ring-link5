@@ -182,30 +182,28 @@ ul.tips li::before{
     </div>
     <p>3個以上が一列として認められるには、隣り合う円の方向が<strong class="hl">30°以内</strong>でなければならない。</p>
     <p>各円の周囲に表示される<strong class="hl">オレンジ色の弧</strong>の範囲内に次の円を置くと、一列が続く。3個以上つながると自動でラインが表示される。</p>
-    <!-- 2ボックス図解 -->
-    <div style="display:flex;gap:10px;margin:14px 0;flex-wrap:wrap">
+    <!-- 2ボックス図解（縦並び） -->
+    <div style="display:flex;flex-direction:column;gap:10px;margin:14px 0">
       <!-- OK -->
-      <div style="flex:1;min-width:130px;background:rgba(8,8,20,0.7);border:1px solid #1a2a1a;border-radius:8px;padding:14px;text-align:center">
+      <div style="background:rgba(8,8,20,0.7);border:1px solid #1a2a1a;border-radius:8px;padding:14px;text-align:center">
         <div style="display:flex;align-items:center;justify-content:center;gap:0">
-          <div class="ring p1 sm">2</div><div class="cline p1" style="width:12px"></div>
-          <div class="ring p1 sm">3</div><div class="cline p1" style="width:12px"></div>
+          <div class="ring p1 sm">1</div><div class="cline p1" style="width:14px"></div>
+          <div class="ring p1 sm">2</div><div class="cline p1" style="width:14px"></div>
           <div class="ring p1 sm">2</div>
         </div>
-        <div style="font-size:26px;color:#55bb55;margin-top:8px;line-height:1">✓</div>
-        <div class="demo-label" style="margin-top:4px">ほぼ一直線 → OK</div>
+        <div style="font-size:24px;color:#55bb55;margin-top:6px;line-height:1">✓ &nbsp;<span style="font-size:15px;color:#558844;vertical-align:middle">ほぼ一直線 → OK</span></div>
       </div>
       <!-- NG -->
-      <div style="flex:1;min-width:130px;background:rgba(8,8,20,0.7);border:1px solid #2a1a1a;border-radius:8px;padding:14px;text-align:center">
-        <div style="position:relative;height:80px;display:flex;align-items:flex-end;justify-content:center">
-          <!-- 右上の円 -->
-          <div class="ring p1 sm" style="position:absolute;top:0;right:22%">1</div>
-          <!-- 矢印 -->
-          <div style="position:absolute;top:18px;right:calc(22% + 28px);font-size:22px;color:#884444;transform:rotate(-30deg)">→</div>
-          <!-- 左下の円（起点） -->
-          <div class="ring p1 sm" style="position:absolute;bottom:0;left:22%">1</div>
+      <div style="background:rgba(8,8,20,0.7);border:1px solid #2a1a1a;border-radius:8px;padding:14px;text-align:center">
+        <div style="display:inline-grid;grid-template-columns:44px 44px 44px;grid-template-rows:44px 44px;align-items:center;justify-items:center">
+          <div></div>
+          <div></div>
+          <div class="ring p1 sm">1</div>
+          <div class="ring p1 sm">1</div>
+          <div style="font-size:22px;color:#884444">↗</div>
+          <div style="font-size:22px;color:#cc3333">✗</div>
         </div>
-        <div style="font-size:26px;color:#bb4444;margin-top:8px;line-height:1">✗</div>
-        <div class="demo-label" style="margin-top:4px">角度が大きすぎる → NG</div>
+        <div style="font-size:15px;color:#884444;margin-top:6px">角度が大きすぎる → NG</div>
       </div>
     </div>
   </div>

@@ -2,124 +2,288 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Ring-Link 5｜遊び方・ルール</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#080814">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="/icons/icon-180.png">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{
   background:#080814;
   font-family:'Segoe UI',Meiryo,Arial,sans-serif;
-  color:#ccc;
-  line-height:1.8;
-  padding:32px 16px 60px;
+  color:#aab;line-height:1.8;
+  padding:0 0 64px;
 }
-.wrap{max-width:680px;margin:0 auto;}
-h1{
-  font-size:22px;letter-spacing:6px;text-transform:uppercase;
-  color:#333;text-align:center;margin-bottom:32px;
+
+/* ヘッダー */
+#header{
+  background:rgba(6,6,20,0.98);
+  border-bottom:1px solid #1a1a33;
+  padding:16px 20px;
+  display:flex;align-items:center;gap:16px;
+  position:sticky;top:0;z-index:10;
 }
-h2{
-  font-size:15px;letter-spacing:3px;text-transform:uppercase;
-  color:#555;border-bottom:1px solid #1a1a2e;
-  padding-bottom:8px;margin:36px 0 16px;
+#back-btn{
+  padding:6px 14px;background:transparent;color:#7788aa;
+  border:1px solid #445577;border-radius:6px;font-size:12px;
+  letter-spacing:1px;text-decoration:none;transition:all .2s;white-space:nowrap;
 }
-p{font-size:14px;color:#aaa;margin-bottom:12px;}
-ul{font-size:14px;color:#aaa;padding-left:20px;margin-bottom:12px;}
-ul li{margin-bottom:6px;}
+#back-btn:hover{color:#aabbcc;border-color:#6688aa}
+.logo-title{font-size:clamp(18px,4.5vw,28px);letter-spacing:clamp(4px,2vw,10px);
+  text-transform:uppercase;font-weight:bold}
+.logo-main{color:#b0bcd8;text-shadow:0 0 20px rgba(160,180,240,0.4)}
+.logo-num{color:#fff;text-shadow:0 0 14px #aabbff,0 0 32px #7788ee}
+.header-sub{font-size:11px;letter-spacing:3px;color:#334455;text-transform:uppercase;margin-left:auto}
+
+/* コンテンツ */
+.wrap{max-width:680px;margin:0 auto;padding:28px 20px;}
+
+/* セクションカード */
+.section{
+  background:rgba(10,10,28,0.8);
+  border:1px solid #1a1a33;border-radius:10px;
+  padding:22px 22px 20px;margin-bottom:20px;
+}
+.section-head{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:14px;
+  padding-bottom:10px;border-bottom:1px solid #141428;
+}
+.section-icon{font-size:20px}
+.section-title{
+  font-size:clamp(12px,3vw,14px);letter-spacing:3px;
+  color:#8899bb;text-transform:uppercase;font-weight:normal;
+}
+p{font-size:clamp(13px,3.2vw,14px);color:#9aabb8;margin-bottom:10px;line-height:1.85}
+p:last-child{margin-bottom:0}
+strong.hl{color:#ccdde8}
+
+/* ヒントボックス */
 .tip{
-  background:rgba(255,200,0,0.05);border-left:3px solid #554400;
-  border-radius:4px;padding:12px 16px;margin:12px 0;
-  font-size:13px;color:#998855;
+  background:rgba(180,140,0,0.06);border-left:3px solid #665500;
+  border-radius:0 6px 6px 0;padding:11px 15px;margin:12px 0;
+  font-size:clamp(12px,3vw,13px);color:#aa9944;line-height:1.7;
 }
-table{
-  width:100%;border-collapse:collapse;
-  font-size:13px;margin:12px 0;
+.tip:last-child{margin-bottom:0}
+
+/* ---- 図解用CSS円 ---- */
+.demo{display:flex;align-items:center;justify-content:center;
+  gap:4px;flex-wrap:wrap;margin:14px 0;padding:14px;
+  background:rgba(8,8,20,0.6);border-radius:8px;border:1px solid #111128}
+.ring{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:44px;height:44px;border-radius:50%;
+  border:2px solid;font-size:13px;font-weight:bold;
+  flex-shrink:0;
 }
-th{
-  background:#0d0d1a;color:#555;
-  padding:8px 12px;text-align:left;font-weight:normal;
-  letter-spacing:1px;border-bottom:1px solid #1a1a2e;
+.ring.p1{border-color:#ff5555;color:#ff7777;background:rgba(200,50,50,0.12)}
+.ring.p2{border-color:#5555ff;color:#7777ff;background:rgba(50,50,200,0.12)}
+.ring.atari{border-color:#ffcc00;color:#ffdd55;background:rgba(200,180,0,0.1);
+  box-shadow:0 0 10px rgba(200,180,0,0.25)}
+.ring.sm{width:34px;height:34px;font-size:11px}
+/* チェーンライン */
+.cline{width:20px;height:2px;border-radius:1px;flex-shrink:0}
+.cline.p1{background:rgba(255,85,85,0.5)}
+.cline.p2{background:rgba(85,85,255,0.5)}
+/* キャプチャ矢印 */
+.arrow{font-size:18px;color:#556677;padding:0 4px}
+.demo-label{font-size:11px;color:#445566;letter-spacing:1px;
+  text-align:center;margin-top:6px}
+
+/* テーブル */
+table{width:100%;border-collapse:collapse;font-size:13px;margin:12px 0}
+th{background:#0a0a1e;color:#667788;padding:8px 12px;
+   text-align:left;font-weight:normal;letter-spacing:1px;
+   border-bottom:1px solid #1a1a33}
+td{padding:10px 12px;border-bottom:1px solid #0e0e22;color:#9aabb8}
+td:first-child{color:#ccdde8;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+
+/* 難易度バッジ */
+.badge{display:inline-block;font-size:11px;padding:2px 9px;
+  border-radius:4px;margin-right:6px;vertical-align:middle;font-weight:bold}
+.badge-easy{background:rgba(80,180,80,0.12);color:#66bb66;border:1px solid #336633}
+.badge-normal{background:rgba(80,80,200,0.12);color:#6688dd;border:1px solid #333388}
+.badge-hard{background:rgba(200,80,80,0.12);color:#dd6655;border:1px solid #882222}
+
+/* 戦略リスト */
+ul.tips{padding-left:0;list-style:none;margin:0}
+ul.tips li{
+  padding:8px 12px 8px 32px;position:relative;
+  font-size:clamp(13px,3.2vw,14px);color:#9aabb8;
+  border-bottom:1px solid #0e0e22;line-height:1.75;
 }
-td{
-  padding:10px 12px;border-bottom:1px solid #111122;color:#aaa;
+ul.tips li:last-child{border-bottom:none}
+ul.tips li::before{
+  content:'▸';position:absolute;left:10px;
+  color:#334455;font-size:12px;top:10px;
 }
-td:first-child{color:#ddd;white-space:nowrap;}
-.tag{
-  display:inline-block;font-size:11px;padding:2px 8px;
-  border-radius:3px;margin-left:6px;vertical-align:middle;
-}
-.tag-warn{background:rgba(255,200,0,0.15);color:#cc9900;}
-.tag-ok{background:rgba(100,200,100,0.12);color:#449944;}
-.tag-ng{background:rgba(255,80,80,0.12);color:#993333;}
+
+/* プレイボタン */
 .btn-play{
-  display:block;text-align:center;margin:48px auto 0;
-  padding:14px 48px;background:#111;color:#888;
-  border:2px solid #2a2a3a;border-radius:8px;
-  text-decoration:none;font-size:14px;letter-spacing:3px;
-  text-transform:uppercase;transition:all .2s;width:fit-content;
+  display:block;text-align:center;margin:32px auto 0;
+  padding:14px 0;background:#1a1a2e;color:#b0bcd8;
+  border:1.5px solid #3a3a66;border-radius:10px;
+  text-decoration:none;font-size:clamp(12px,3.5vw,14px);
+  letter-spacing:3px;text-transform:uppercase;transition:all .2s;
+  max-width:260px;
 }
-.btn-play:hover{background:#10101a;border-color:#333399;color:#8888ff;}
+.btn-play:hover{background:#22223a;border-color:#6060aa;color:#ddddff}
 </style>
 </head>
 <body>
+
+<div id="header">
+  <a id="back-btn" href="index.html">← ゲームへ</a>
+  <div class="logo-title">
+    <span class="logo-main">Ring-Link</span> <span class="logo-num">5</span>
+  </div>
+  <div class="header-sub">Rules</div>
+</div>
+
 <div class="wrap">
 
-  <h1>Ring-Link 5</h1>
-
   <!-- 目的 -->
-  <h2>🎯 目的</h2>
-  <p>同じ色の円を<strong style="color:#ddd">直線状に5個</strong>並べたら勝ち。</p>
+  <div class="section">
+    <div class="section-head">
+      <span class="section-icon">🎯</span>
+      <span class="section-title">目的</span>
+    </div>
+    <p>同じ色の円を<strong class="hl">直線状に 5 個</strong>並べたら勝ち。</p>
+    <div class="demo">
+      <div class="ring p1">2</div><div class="cline p1"></div>
+      <div class="ring p1">3</div><div class="cline p1"></div>
+      <div class="ring p1">3</div><div class="cline p1"></div>
+      <div class="ring p1">3</div><div class="cline p1"></div>
+      <div class="ring p1">2</div>
+    </div>
+    <div class="demo-label">← 赤が5個直線に並んだら赤の勝ち</div>
+  </div>
 
   <!-- 基本操作 -->
-  <h2>🕹️ 基本操作</h2>
-  <p><strong style="color:#ddd">1手目：</strong>盤面の好きな場所をクリック（タップ）して最初の円を置く。</p>
-  <p><strong style="color:#ddd">2手目以降：</strong>すでに置かれている円に<strong style="color:#ddd">ぴったり接する位置</strong>にしか置けない。カーソル（指）を近づけると半透明のプレビューが表示されるので、位置を確認してからクリック（タップ）で確定。</p>
-  <div class="tip">📱 スマホの場合：指を置いたまま動かして位置を調整し、指を離して確定。プレビューは指より少し上に表示される。</div>
+  <div class="section">
+    <div class="section-head">
+      <span class="section-icon">🕹️</span>
+      <span class="section-title">基本操作</span>
+    </div>
+    <p><strong class="hl">1手目：</strong>盤面の好きな場所をタップ（クリック）して最初の円を置く。</p>
+    <p><strong class="hl">2手目以降：</strong>すでに置かれた円に<strong class="hl">ぴったり接する位置</strong>にしか置けない。近づけると半透明のプレビューが表示されるので、確認してからタップで確定。</p>
+    <div class="tip">📱 スマホ：指を置いたまま動かして位置を調整し、指を離して確定。プレビューは指より少し上に表示される。</div>
+  </div>
 
   <!-- 直線のルール -->
-  <h2>📐 直線のルール</h2>
-  <p>3個以上の直線チェーンとして認められるには、<strong style="color:#ddd">隣り合う2つの円の向きが30°以内</strong>でなければならない。</p>
-  <p>各円から<strong style="color:#ff9944">オレンジ色の弧</strong>が表示される。この弧の中に次の円を置くと直線が続く。3個以上の直線チェーンは自動的にラインで可視化される。</p>
+  <div class="section">
+    <div class="section-head">
+      <span class="section-icon">📐</span>
+      <span class="section-title">直線のルール（30°以内）</span>
+    </div>
+    <p>3個以上が直線チェーンとして認められるには、隣り合う2つの円の方向が<strong class="hl">30°以内</strong>でなければならない。</p>
+    <p>各円の周囲に表示される<strong class="hl">オレンジ色の弧</strong>の範囲内に次の円を置くと、直線が続く。3個以上のチェーンは自動でラインが可視化される。</p>
+    <div class="demo" style="gap:2px">
+      <div class="ring p1 sm">2</div><div class="cline p1"></div>
+      <div class="ring p1 sm">3</div><div class="cline p1"></div>
+      <div class="ring p1 sm">3</div>
+      <span style="font-size:22px;color:#556677;padding:0 8px">✓</span>
+      <div class="ring p1 sm">1</div>
+      <span style="font-size:13px;color:#445566;padding:0 4px">↗</span>
+      <div class="ring p1 sm">1</div>
+      <span style="font-size:22px;color:#993333;padding:0 8px">✗</span>
+    </div>
+    <div class="demo-label">同じ向きに並ぶ（左） ／ 角度が大きすぎる（右）</div>
+  </div>
 
   <!-- 気システム -->
-  <h2>💨 気（き）システム</h2>
-  <p>各円の中央に表示されている<strong style="color:#ddd">数字が「気」</strong>を表している。気は囲碁の概念を取り入れたもので、円の「体力」にあたる。</p>
-  <table>
-    <tr><th>用語</th><th>意味</th></tr>
-    <tr>
-      <td>気</td>
-      <td>1 ＋ 接している同色の円の数。仲間が多いほど強くなる。</td>
-    </tr>
-    <tr>
-      <td>圧力</td>
-      <td>自分の円に接している相手の円の数。</td>
-    </tr>
-  </table>
-  <p><strong style="color:#ddd">圧力 ＞ 気</strong> になると、その円は捕獲されて盤面から消える。</p>
-  <div class="tip">⚠️ <strong style="color:#cc9900">黄色く光っている円</strong>はアタリのサイン。捕獲される直前の状態。</div>
+  <div class="section">
+    <div class="section-head">
+      <span class="section-icon">💨</span>
+      <span class="section-title">気（き）システム</span>
+    </div>
+    <p>円の中央の<strong class="hl">数字が「気」</strong>。円の体力にあたる。</p>
+    <table>
+      <tr><th>用語</th><th>意味</th></tr>
+      <tr><td>気</td><td>1 ＋ 接している<strong class="hl">同色の円の数</strong>。仲間が多いほど大きくなる。</td></tr>
+      <tr><td>圧力</td><td>自分の円に接している<strong class="hl">相手の円の数</strong>。</td></tr>
+    </table>
+    <p><strong class="hl">圧力 ＞ 気</strong> になると捕獲されて盤面から消える。</p>
+
+    <!-- 捕獲の図解 -->
+    <div class="demo">
+      <div style="text-align:center">
+        <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:6px">
+          <div class="ring p2 sm">1</div>
+          <div class="ring atari sm">1</div>
+          <div class="ring p2 sm">1</div>
+        </div>
+        <div style="display:flex;justify-content:center">
+          <div class="ring p2 sm">1</div>
+        </div>
+        <div class="demo-label" style="margin-top:6px">圧力3 ＞ 気1 → 捕獲！</div>
+      </div>
+      <span class="arrow">→</span>
+      <div style="text-align:center">
+        <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:6px">
+          <div class="ring p2 sm">1</div>
+          <div style="width:34px;height:34px;border-radius:50%;border:1px dashed #334;display:inline-flex;align-items:center;justify-content:center;font-size:10px;color:#334">消</div>
+          <div class="ring p2 sm">1</div>
+        </div>
+        <div style="display:flex;justify-content:center">
+          <div class="ring p2 sm">1</div>
+        </div>
+        <div class="demo-label" style="margin-top:6px">黄色い円が消える</div>
+      </div>
+    </div>
+    <div class="tip">⚠️ <strong style="color:#cc9900">黄色く光っている円</strong>はアタリのサイン。捕獲される一歩手前の危険な状態。</div>
+  </div>
 
   <!-- 禁手 -->
-  <h2>🚫 禁手（自殺手）</h2>
-  <p>置いた瞬間に自分の円が捕獲されてしまう場所には<strong style="color:#ddd">置けない</strong>。ただし、同時に相手の円も捕獲できる場合は例外として置ける。</p>
+  <div class="section">
+    <div class="section-head">
+      <span class="section-icon">🚫</span>
+      <span class="section-title">禁手（自殺手）</span>
+    </div>
+    <p>置いた瞬間に<strong class="hl">自分の円が捕獲されてしまう場所には置けない</strong>。ただし、同時に相手の円も捕獲できる場合は例外として置ける。</p>
+  </div>
 
-  <!-- モード -->
-  <h2>🤖 対戦モード</h2>
-  <table>
-    <tr><th>モード</th><th>内容</th></tr>
-    <tr><td>Player vs Player</td><td>同じ端末で2人が交互にプレイ。</td></tr>
-    <tr><td>Player vs CPU</td><td>コンピュータと対戦。CPUは勝ち筋の構築・ブロック・捕獲を判断して手を打つ。</td></tr>
-  </table>
+  <!-- 対戦モード -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-icon">🤖</span>
+      <span class="section-title">対戦モード</span>
+    </div>
+    <table>
+      <tr><th>モード</th><th>内容</th></tr>
+      <tr><td>Player vs Player</td><td>同じ端末で2人が交互にプレイ。</td></tr>
+      <tr>
+        <td>Player vs CPU</td>
+        <td>
+          コンピュータと対戦。難易度3段階：<br>
+          <span class="badge badge-easy">入門</span>チェーンより運の要素が大きい<br>
+          <span class="badge badge-normal">普通</span>チェーン構築・ブロックを判断<br>
+          <span class="badge badge-hard">強い</span>ダブル脅威まで読む
+        </td>
+      </tr>
+    </table>
+  </div>
 
-  <!-- 戦略 -->
-  <h2>💡 戦略のヒント</h2>
-  <ul>
-    <li>円をかたまりで置くだけでは勝てない。<strong style="color:#ddd">直線を意識して伸ばす</strong>こと。</li>
-    <li>自分の円同士を隣接させて<strong style="color:#ddd">気を増やす</strong>と、相手に捕獲されにくくなる。</li>
-    <li>相手の円の気が少ない（黄色く光っている）ところを狙って<strong style="color:#ddd">囲むと捕獲のチャンス</strong>。</li>
-    <li>相手の直線が<strong style="color:#ddd">3個になったら最優先でブロック！</strong></li>
-  </ul>
+  <!-- 戦略のヒント -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-icon">💡</span>
+      <span class="section-title">戦略のヒント</span>
+    </div>
+    <ul class="tips">
+      <li>円をかたまりで置くだけでは勝てない。<strong class="hl">直線を意識して伸ばす</strong>こと。</li>
+      <li>同色の円を隣接させて<strong class="hl">気を増やす</strong>と、相手に捕獲されにくくなる。</li>
+      <li>相手の円が<strong class="hl">黄色く光ったら囲むチャンス</strong>。圧力をかけて捕獲を狙え。</li>
+      <li>相手の直線が<strong class="hl">3個になったら最優先でブロック！</strong>4個になると止めにくい。</li>
+      <li>2方向に同時に3連チェーンを作る「<strong class="hl">ダブル脅威</strong>」は相手が防ぎきれない。</li>
+    </ul>
+  </div>
 
-  <a class="btn-play" href="index.html" target="_blank">▶ ゲームをプレイ</a>
+  <a class="btn-play" href="index.html">▶ ゲームをプレイ</a>
 
 </div>
 </body>

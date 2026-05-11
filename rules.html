@@ -90,14 +90,14 @@ strong.hl{color:#ccdde8}
 .cline.p2{background:rgba(85,85,255,0.5)}
 /* キャプチャ矢印 */
 .arrow{font-size:18px;color:#556677;padding:0 4px}
-.demo-label{font-size:11px;color:#445566;letter-spacing:1px;
-  text-align:center;margin-top:6px}
+.demo-label{font-size:clamp(13px,3.2vw,15px);color:#7a8fa8;letter-spacing:1px;
+  text-align:center;margin-top:8px}
 
 /* テーブル */
 table{width:100%;border-collapse:collapse;font-size:clamp(14px,3.5vw,16px);margin:12px 0}
 th{background:#0a0a1e;color:#667788;padding:9px 12px;
    text-align:left;font-weight:normal;letter-spacing:1px;
-   border-bottom:1px solid #1a1a33}
+   border-bottom:1px solid #1a1a33;white-space:nowrap}
 td{padding:11px 12px;border-bottom:1px solid #0e0e22;color:#9aabb8}
 td:first-child{color:#ccdde8;white-space:nowrap}
 tr:last-child td{border-bottom:none}
@@ -152,7 +152,7 @@ ul.tips li::before{
       <span class="section-icon">🎯</span>
       <span class="section-title">目的</span>
     </div>
-    <p>同じ色の円を<strong class="hl" style="white-space:nowrap">直線状に 5 個並べたら勝ち。</strong></p>
+    <p>同じ色の円を<br><strong class="hl">直線状に 5 個並べたら勝ち。</strong></p>
     <div class="demo">
       <div class="ring p1">2</div><div class="cline p1"></div>
       <div class="ring p1">3</div><div class="cline p1"></div>
@@ -180,19 +180,34 @@ ul.tips li::before{
       <span class="section-icon">📐</span>
       <span class="section-title">直線のルール（30°以内）</span>
     </div>
-    <p>3個以上が直線チェーンとして認められるには、隣り合う2つの円の方向が<strong class="hl">30°以内</strong>でなければならない。</p>
-    <p>各円の周囲に表示される<strong class="hl">オレンジ色の弧</strong>の範囲内に次の円を置くと、直線が続く。3個以上のチェーンは自動でラインが可視化される。</p>
-    <div class="demo" style="gap:2px">
-      <div class="ring p1 sm">2</div><div class="cline p1"></div>
-      <div class="ring p1 sm">3</div><div class="cline p1"></div>
-      <div class="ring p1 sm">3</div>
-      <span style="font-size:22px;color:#556677;padding:0 8px">✓</span>
-      <div class="ring p1 sm">1</div>
-      <span style="font-size:13px;color:#445566;padding:0 4px">↗</span>
-      <div class="ring p1 sm">1</div>
-      <span style="font-size:22px;color:#993333;padding:0 8px">✗</span>
+    <p>3個以上が一列として認められるには、隣り合う円の方向が<strong class="hl">30°以内</strong>でなければならない。</p>
+    <p>各円の周囲に表示される<strong class="hl">オレンジ色の弧</strong>の範囲内に次の円を置くと、一列が続く。3個以上つながると自動でラインが表示される。</p>
+    <!-- 2ボックス図解 -->
+    <div style="display:flex;gap:10px;margin:14px 0;flex-wrap:wrap">
+      <!-- OK -->
+      <div style="flex:1;min-width:130px;background:rgba(8,8,20,0.7);border:1px solid #1a2a1a;border-radius:8px;padding:14px;text-align:center">
+        <div style="display:flex;align-items:center;justify-content:center;gap:0">
+          <div class="ring p1 sm">2</div><div class="cline p1" style="width:12px"></div>
+          <div class="ring p1 sm">3</div><div class="cline p1" style="width:12px"></div>
+          <div class="ring p1 sm">2</div>
+        </div>
+        <div style="font-size:26px;color:#55bb55;margin-top:8px;line-height:1">✓</div>
+        <div class="demo-label" style="margin-top:4px">ほぼ一直線 → OK</div>
+      </div>
+      <!-- NG -->
+      <div style="flex:1;min-width:130px;background:rgba(8,8,20,0.7);border:1px solid #2a1a1a;border-radius:8px;padding:14px;text-align:center">
+        <div style="position:relative;height:80px;display:flex;align-items:flex-end;justify-content:center">
+          <!-- 右上の円 -->
+          <div class="ring p1 sm" style="position:absolute;top:0;right:22%">1</div>
+          <!-- 矢印 -->
+          <div style="position:absolute;top:18px;right:calc(22% + 28px);font-size:22px;color:#884444;transform:rotate(-30deg)">→</div>
+          <!-- 左下の円（起点） -->
+          <div class="ring p1 sm" style="position:absolute;bottom:0;left:22%">1</div>
+        </div>
+        <div style="font-size:26px;color:#bb4444;margin-top:8px;line-height:1">✗</div>
+        <div class="demo-label" style="margin-top:4px">角度が大きすぎる → NG</div>
+      </div>
     </div>
-    <div class="demo-label">同じ向きに並ぶ（左） ／ 角度が大きすぎる（右）</div>
   </div>
 
   <!-- 気システム -->
@@ -210,29 +225,37 @@ ul.tips li::before{
     <p><strong class="hl">圧力 ＞ 気</strong> になると捕獲されて盤面から消える。</p>
 
     <!-- 捕獲の図解 -->
-    <div class="demo">
+    <div style="display:flex;gap:16px;justify-content:center;align-items:center;flex-wrap:wrap;
+                margin:14px 0;padding:16px;background:rgba(8,8,20,0.6);border-radius:8px;border:1px solid #111128">
+      <!-- Before -->
       <div style="text-align:center">
-        <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:6px">
-          <div class="ring p2 sm">1</div>
-          <div class="ring atari sm">1</div>
-          <div class="ring p2 sm">1</div>
+        <div class="demo-label" style="margin-bottom:10px">青が1個追加される直前</div>
+        <!-- 3×2グリッド（円が隙間なく並ぶ） -->
+        <div style="display:inline-grid;grid-template-columns:repeat(3,38px);grid-template-rows:repeat(2,38px)">
+          <div class="ring p2" style="width:38px;height:38px;font-size:12px;border-radius:50%">1</div>
+          <div class="ring atari" style="width:38px;height:38px;font-size:12px;border-radius:50%">1</div>
+          <div class="ring p2" style="width:38px;height:38px;font-size:12px;border-radius:50%">1</div>
+          <div style="width:38px;height:38px"></div>
+          <div class="ring p2" style="width:38px;height:38px;font-size:11px;border-radius:50%;opacity:0.45;border-style:dashed">?</div>
+          <div style="width:38px;height:38px"></div>
         </div>
-        <div style="display:flex;justify-content:center">
-          <div class="ring p2 sm">1</div>
-        </div>
-        <div class="demo-label" style="margin-top:6px">圧力3 ＞ 気1 → 捕獲！</div>
+        <div class="demo-label" style="margin-top:8px">黄◯の気＝1、圧力＝2</div>
       </div>
-      <span class="arrow">→</span>
+      <!-- Arrow -->
+      <div style="font-size:28px;color:#445566">→</div>
+      <!-- After -->
       <div style="text-align:center">
-        <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:6px">
-          <div class="ring p2 sm">1</div>
-          <div style="width:34px;height:34px;border-radius:50%;border:1px dashed #334;display:inline-flex;align-items:center;justify-content:center;font-size:10px;color:#334">消</div>
-          <div class="ring p2 sm">1</div>
+        <div class="demo-label" style="margin-bottom:10px">青を置いた瞬間（圧力3＞気1）</div>
+        <div style="display:inline-grid;grid-template-columns:repeat(3,38px);grid-template-rows:repeat(2,38px)">
+          <div class="ring p2" style="width:38px;height:38px;font-size:12px;border-radius:50%">1</div>
+          <div style="width:38px;height:38px;border-radius:50%;border:1.5px dashed #445;
+               display:flex;align-items:center;justify-content:center;font-size:11px;color:#445">消</div>
+          <div class="ring p2" style="width:38px;height:38px;font-size:12px;border-radius:50%">1</div>
+          <div style="width:38px;height:38px"></div>
+          <div class="ring p2" style="width:38px;height:38px;font-size:12px;border-radius:50%">1</div>
+          <div style="width:38px;height:38px"></div>
         </div>
-        <div style="display:flex;justify-content:center">
-          <div class="ring p2 sm">1</div>
-        </div>
-        <div class="demo-label" style="margin-top:6px">黄色い円が消える</div>
+        <div class="demo-label" style="margin-top:8px">黄◯が捕獲されて消える</div>
       </div>
     </div>
     <div class="tip">⚠️ <strong style="color:#cc9900">黄色く光っている円</strong>はアタリのサイン。捕獲される一歩手前の危険な状態。</div>
@@ -260,9 +283,9 @@ ul.tips li::before{
         <td>Player vs CPU</td>
         <td>
           コンピュータと対戦。難易度3段階：<br>
-          <span class="badge badge-easy">入門</span>チェーンより運の要素が大きい<br>
-          <span class="badge badge-normal">普通</span>チェーン構築・ブロックを判断<br>
-          <span class="badge badge-hard">強い</span>ダブル脅威まで読む
+          <span class="badge badge-easy">入門</span>ランダムな手が多く、初めての方向け<br>
+          <span class="badge badge-normal">普通</span>攻めと守りを基本的に判断する<br>
+          <span class="badge badge-hard">強い</span>2方向同時に勝ち筋を作るなど先を読む
         </td>
       </tr>
     </table>
@@ -279,7 +302,7 @@ ul.tips li::before{
       <li>同色の円を隣接させて<strong class="hl">気を増やす</strong>と、相手に捕獲されにくくなる。</li>
       <li>相手の円が<strong class="hl">黄色く光ったら囲むチャンス</strong>。圧力をかけて捕獲を狙え。</li>
       <li>相手の直線が<strong class="hl">3個になったら最優先でブロック！</strong>4個になると止めにくい。</li>
-      <li>2方向に同時に3連チェーンを作る「<strong class="hl">ダブル脅威</strong>」は相手が防ぎきれない。</li>
+      <li>2方向に同時に「あと2個で勝ち」の状態を作ると、相手はどちらか一方しか防げない。</li>
     </ul>
   </div>
 

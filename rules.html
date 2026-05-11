@@ -95,11 +95,11 @@ strong.hl{color:#ccdde8}
 
 /* テーブル */
 table{width:100%;border-collapse:collapse;font-size:clamp(14px,3.5vw,16px);margin:12px 0;
-  border:1px solid #2a2a50}
-th{background:#0a0a1e;color:#7788aa;padding:9px 12px;
+  border:2px solid #4a4a80}
+th{background:#0d0d22;color:#8899bb;padding:9px 12px;
    text-align:left;font-weight:normal;letter-spacing:1px;
-   border:1px solid #2a2a50;white-space:nowrap}
-td{padding:11px 12px;border:1px solid #1e1e3a;color:#9aabb8}
+   border:2px solid #4a4a80;white-space:nowrap}
+td{padding:11px 12px;border:1.5px solid #33335a;color:#9aabb8}
 td:first-child{color:#ccdde8;white-space:nowrap}
 tr:last-child td{border-bottom:1px solid #1e1e3a}
 
@@ -211,7 +211,7 @@ ul.tips li::before{
           <div class="ring atari" style="width:38px;height:38px;font-size:12px;border-radius:50%">1</div>
           <div class="ring p2" style="width:38px;height:38px;font-size:12px;border-radius:50%">1</div>
           <div style="width:38px;height:38px"></div>
-          <div class="ring p2" style="width:38px;height:38px;font-size:11px;border-radius:50%;opacity:0.45;border-style:dashed">?</div>
+          <div class="ring p2" style="width:38px;height:38px;font-size:11px;border-radius:50%;opacity:0.7;border-width:2.5px;border-style:dashed">?</div>
           <div style="width:38px;height:38px"></div>
         </div>
         <div class="demo-label" style="margin-top:8px">黄◯の気＝1、圧力＝2</div>
@@ -223,7 +223,7 @@ ul.tips li::before{
         <div class="demo-label" style="margin-bottom:10px">青を置いた瞬間（圧力3＞気1）</div>
         <div style="display:inline-grid;grid-template-columns:repeat(3,38px);grid-template-rows:repeat(2,38px)">
           <div class="ring p2" style="width:38px;height:38px;font-size:12px;border-radius:50%">1</div>
-          <div style="width:38px;height:38px;border-radius:50%;border:1.5px dashed #445;
+          <div style="width:38px;height:38px;border-radius:50%;border:2.5px dashed #5566aa;
                display:flex;align-items:center;justify-content:center;font-size:11px;color:#445">消</div>
           <div class="ring p2" style="width:38px;height:38px;font-size:12px;border-radius:50%">1</div>
           <div style="width:38px;height:38px"></div>
@@ -282,7 +282,10 @@ ul.tips li::before{
     </ul>
   </div>
 
-  <a class="btn-play" href="index.html">▶ ゲームをプレイ</a>
+  <a class="btn-play" href="index.html"
+     onclick="if(window.opener||history.length<=1){window.close();return false}">
+    ← ゲームに戻る
+  </a>
 
 </div>
 </body>

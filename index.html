@@ -17,7 +17,7 @@ body{
 .logo-main{color:#777;text-shadow:0 0 18px rgba(160,160,200,0.25)}
 .logo-num{color:#8899cc;text-shadow:0 0 20px rgba(100,120,220,0.45)}
 #wrap{position:relative;width:100%;max-width:800px}
-canvas{display:block;width:100%;height:auto;border:1px solid #161628;border-radius:6px;cursor:crosshair;touch-action:none}
+canvas{display:block;width:100%;height:auto;background:#0d0d22;border:1.5px solid #2d2d55;border-radius:6px;cursor:crosshair;touch-action:none}
 #msg{margin-top:8px;font-size:clamp(11px,3vw,14px);text-align:center;color:#777;letter-spacing:1px;min-height:18px;width:100%;max-width:800px}
 #rules{margin-top:6px;font-size:clamp(9px,2.2vw,11px);color:#666;text-align:center;max-width:800px;line-height:1.7;padding:0 4px}
 /* ゲーム終了 大テキスト（盤面を暗転させない） */
@@ -59,13 +59,13 @@ canvas{display:block;width:100%;height:auto;border:1px solid #161628;border-radi
 #btn-tut:hover,#btn-tut:active{background:#0d1a0d;border-color:#336633;color:#88cc88}
 /* 難易度選択 */
 #diff-select{display:none;flex-direction:column;align-items:center;gap:14px;width:100%}
-#diff-label{font-size:clamp(9px,2.5vw,11px);letter-spacing:3px;color:#444;text-transform:uppercase}
+#diff-label{font-size:clamp(12px,3vw,15px);letter-spacing:3px;color:#8899bb;text-transform:uppercase;margin-bottom:4px}
 #btn-easy:hover,#btn-easy:active{background:#0d1a0d;border-color:#336633;color:#88ee88}
 #btn-normal:hover,#btn-normal:active{background:#10101a;border-color:#333399;color:#8888ff}
 #btn-hard:hover,#btn-hard:active{background:#1a0d0d;border-color:#883322;color:#ff8866}
-#btn-back{padding:7px 20px;background:transparent;color:#444;border:1px solid #252535;
-  border-radius:6px;font-size:11px;letter-spacing:2px;cursor:pointer;transition:all .2s}
-#btn-back:hover{color:#888;border-color:#444}
+#btn-back{padding:7px 20px;background:transparent;color:#7788aa;border:1px solid #445577;
+  border-radius:6px;font-size:12px;letter-spacing:2px;cursor:pointer;transition:all .2s}
+#btn-back:hover{color:#aabbcc;border-color:#6688aa}
 /* チュートリアルパネル */
 #tut-panel{display:none;width:100%;max-width:800px;
   background:rgba(6,6,20,0.97);border:1px solid #1a1a44;border-radius:8px;
@@ -95,8 +95,8 @@ canvas{display:block;width:100%;height:auto;border:1px solid #161628;border-radi
 #tut-cpu:hover{background:#10101a;border-color:#333399;color:#8888ff}
 /* 統計パネル */
 #stats-box{width:100%;max-width:280px;text-align:center;margin-top:12px;padding-top:12px;
-  border-top:1px solid #1a1a2e}
-.stats-label{font-size:11px;letter-spacing:3px;color:#445566;text-transform:uppercase;margin-bottom:8px}
+  border-top:2px solid #2a3a55}
+.stats-label{font-size:12px;letter-spacing:3px;color:#8899bb;text-transform:uppercase;margin-bottom:8px}
 .stats-row{font-size:clamp(13px,3.5vw,16px);color:#6a7a8a;letter-spacing:1px;margin-bottom:6px;line-height:2}
 .stats-row .sn{color:#9ab8cc;font-weight:bold}
 .stats-row .sw{color:#88bb55}
@@ -106,10 +106,10 @@ canvas{display:block;width:100%;height:auto;border:1px solid #161628;border-radi
   padding:6px 16px;cursor:pointer;transition:all .2s}
 #stats-reset-btn:hover{color:#aaccdd;border-color:#6699aa}
 /* 難易度選択内の個別勝敗 */
-#diff-stats{margin-top:8px;font-size:clamp(12px,3vw,14px);color:#445566;letter-spacing:1px;text-align:center;line-height:2}
+#diff-stats{margin-top:8px;font-size:clamp(12px,3vw,14px);color:#7788aa;letter-spacing:1px;text-align:center;line-height:2}
 #diff-stats span{margin:0 5px}
-#diff-stats .sw{color:#669944}
-#diff-stats .sl{color:#994444}
+#diff-stats .sw{color:#88bb55}
+#diff-stats .sl{color:#cc6655}
 </style>
 </head>
 <body>
@@ -1196,6 +1196,23 @@ function draw() {
   // チュートリアルターゲット表示（最前面に描く）
   drawTutorialIndicator();
 
+  // 最初の1手ガイド
+  if (circles.length === 0 && state === 'play' && !tutorialMode) {
+    const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 700);
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.font = `bold ${Math.round(W * 0.034)}px 'Segoe UI', Meiryo, sans-serif`;
+    ctx.fillStyle = `rgba(160,180,240,${0.55 + 0.25 * pulse})`;
+    ctx.shadowBlur = 18 * pulse;
+    ctx.shadowColor = 'rgba(100,130,255,0.5)';
+    ctx.fillText('最初の 1 手をどうぞ', W / 2, H / 2 - 12);
+    ctx.font = `${Math.round(W * 0.022)}px 'Segoe UI', Meiryo, sans-serif`;
+    ctx.fillStyle = `rgba(120,140,200,${0.35 + 0.15 * pulse})`;
+    ctx.shadowBlur = 0;
+    ctx.fillText('どこにでも置けます', W / 2, H / 2 + 22);
+    ctx.restore();
+  }
+
   requestAnimationFrame(draw);
 }
 
@@ -1450,7 +1467,7 @@ function startGame(selectedMode) {
   overCorner.classList.remove('show');
   restartArea.classList.remove('show');
   msgEl.style.display = '';
-  msgEl.textContent = 'クリックして最初の円を置いてください';
+  msgEl.textContent = '';
   document.getElementById('rules').style.display = '';
   document.getElementById('rules-link').style.display = '';
   updateHUD();

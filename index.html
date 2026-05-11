@@ -1301,8 +1301,15 @@ function handlePlace(mx, my, precomputed) {
         const captured = doQiCaptures(placed, turn);
         soundPlace();
         if (captured > 0) setTimeout(() => soundCapture(captured), 120);
-        msgEl.textContent = '💨 捕獲しました！';
-        setTimeout(() => advanceTutorial(), 1600);
+        msgEl.textContent = '';
+        setTimeout(() => {
+          document.getElementById('tut-title-el').textContent = '⑥ 捕獲！（続き）';
+          document.getElementById('tut-body-el').textContent =
+            '捕獲された場所には（×）マークと数字（4）が表示されます。\n捕獲された場所はその後4手の間、どちらのPlayerも円を置くことができません。\n1手進む毎に数字は減って、あと何手で置けるようになるかがわかります。';
+          const nextBtn = document.getElementById('tut-next');
+          nextBtn.style.display = 'inline-block';
+          nextBtn.textContent = '次へ →';
+        }, 900);
       } else if (step.isWinStep) {
         const won = checkWin(turn);
         if (won) {

@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Ring-Link 5｜遊び方・ルール</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#080814">
@@ -22,21 +25,26 @@ body{
 #header{
   background:rgba(6,6,20,0.98);
   border-bottom:1px solid #1a1a33;
-  padding:16px 20px;
-  display:flex;align-items:center;gap:16px;
+  padding:14px 20px;
+  display:flex;align-items:center;
   position:sticky;top:0;z-index:10;
+  min-height:54px;
 }
 #back-btn{
   padding:6px 14px;background:transparent;color:#7788aa;
   border:1px solid #445577;border-radius:6px;font-size:12px;
   letter-spacing:1px;text-decoration:none;transition:all .2s;white-space:nowrap;
+  position:relative;z-index:2;
 }
 #back-btn:hover{color:#aabbcc;border-color:#6688aa}
-.logo-title{font-size:clamp(18px,4.5vw,28px);letter-spacing:clamp(4px,2vw,10px);
-  text-transform:uppercase;font-weight:bold}
+.logo-title{
+  position:absolute;left:50%;transform:translateX(-50%);
+  font-size:clamp(16px,4vw,26px);letter-spacing:clamp(3px,1.5vw,8px);
+  text-transform:uppercase;font-weight:bold;white-space:nowrap;
+  pointer-events:none;
+}
 .logo-main{color:#b0bcd8;text-shadow:0 0 20px rgba(160,180,240,0.4)}
 .logo-num{color:#fff;text-shadow:0 0 14px #aabbff,0 0 32px #7788ee}
-.header-sub{font-size:11px;letter-spacing:3px;color:#334455;text-transform:uppercase;margin-left:auto}
 
 /* コンテンツ */
 .wrap{max-width:680px;margin:0 auto;padding:28px 20px;}
@@ -138,11 +146,10 @@ ul.tips li::before{
 <body>
 
 <div id="header">
-  <a id="back-btn" href="index.html">← ゲームへ</a>
+  <a id="back-btn" href="index.html" onclick="history.back();return false">← ゲームへ</a>
   <div class="logo-title">
-    <span class="logo-main">Ring-Link</span> <span class="logo-num">5</span>
+    <span class="logo-main">Ring-Link</span><span class="logo-num"> 5</span>
   </div>
-  <div class="header-sub">Rules</div>
 </div>
 
 <div class="wrap">
@@ -282,8 +289,7 @@ ul.tips li::before{
     </ul>
   </div>
 
-  <a class="btn-play" href="index.html"
-     onclick="if(window.opener||history.length<=1){window.close();return false}">
+  <a class="btn-play" href="index.html" onclick="history.back();return false">
     ← ゲームに戻る
   </a>
 
